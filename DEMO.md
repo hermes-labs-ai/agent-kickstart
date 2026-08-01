@@ -12,7 +12,7 @@ Say: “I am going to show you a terminal that does not expect you to speak term
 
 Have your friend paste:
 
-> Install Claude Kickstart from https://github.com/hermes-labs-ai/claude-kickstart and walk me through it — I'm new to this.
+> Install Claude Kickstart from https://github.com/hermes-labs-ai/agent-kickstart and walk me through it — I'm new to this.
 
 The repository's `AGENTS.md` instructs the installing agent: it explains the download before doing anything, keeps everything inside the folder, and ends with **one copy-paste line** (`cd -- <folder> && claude "/kickstart"`) — on a Mac the installer also puts it on the clipboard. Have your friend type `/exit`, paste that one line, and approve the workspace trust screen after verifying the folder and permissions. This one reopen is required by Claude Code's native project-command and settings lifecycle; there are no steps to memorize, and the same line is how they come back tomorrow.
 

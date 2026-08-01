@@ -6,6 +6,18 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
+test("public install and support URLs use the canonical repository", () => {
+  const files = ["README.md", "DEMO.md", "SECURITY.md", "pyproject.toml"];
+  for (const file of files) {
+    const text = fs.readFileSync(path.join(ROOT, file), "utf8");
+    assert.doesNotMatch(text, /hermes-labs-ai\/claude-kickstart/);
+  }
+  assert.match(
+    fs.readFileSync(path.join(ROOT, "README.md"), "utf8"),
+    /hermes-labs-ai\/agent-kickstart/,
+  );
+});
+
 function load(name) {
   return JSON.parse(fs.readFileSync(path.join(ROOT, "examples", name), "utf8"));
 }

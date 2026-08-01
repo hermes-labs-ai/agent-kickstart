@@ -17,8 +17,8 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/hermes-labs-ai/claude-kickstart"
-Repository = "https://github.com/hermes-labs-ai/claude-kickstart"
+Homepage = "https://github.com/hermes-labs-ai/agent-kickstart"
+Repository = "https://github.com/hermes-labs-ai/agent-kickstart"
 
 [project.scripts]
 claude-kickstart = "claude_kickstart.cli:main"
