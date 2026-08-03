@@ -148,12 +148,10 @@ See [DEMO.md](DEMO.md) for a ten-minute friend demo and [DEVELOPMENT.md](DEVELOP
 
 ## About
 
-Claude Kickstart is built by [Hermes Labs](https://hermes-labs.ai) — a research practice in
-**Epistemic Engineering**: engineering AI reliability at the language operations layer, not at the model substrate. The position:
-**the model is the substrate**, but **language is the operations layer** — where deployed
-reliability is won or lost. Kickstart is the newcomer-facing end of that work: **linguistic
-infrastructure** that lets a person who has never touched a terminal direct an AI agent
-safely, in their own words.
+Claude Kickstart is built by [Hermes Labs](https://hermes-labs.ai), an AI reliability
+engineering studio for production agents and LLM applications. Kickstart brings that work
+to first-time Claude Code users: a guided, project-local way to begin useful work without
+having to learn terminal conventions first.
 
 ## License
 
