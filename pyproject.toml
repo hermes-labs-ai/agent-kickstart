@@ -9,7 +9,7 @@ description = "A project-local beginner-facing harness for Claude Code"
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
-authors = [{name = "LPCI"}]
+authors = [{name = "Hermes Labs"}]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Programming Language :: Python :: 3",
@@ -17,8 +17,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/hermes-labs-ai/claude-kickstart"
-Repository = "https://github.com/hermes-labs-ai/claude-kickstart"
+Homepage = "https://github.com/hermes-labs-ai/agent-kickstart"
+Repository = "https://github.com/hermes-labs-ai/agent-kickstart"
+Issues = "https://github.com/hermes-labs-ai/agent-kickstart/issues"
 
 [project.scripts]
 claude-kickstart = "claude_kickstart.cli:main"

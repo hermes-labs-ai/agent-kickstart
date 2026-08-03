@@ -20,6 +20,10 @@ need to relay rules to you.
    load. That reopen is part of installation, not an error.
 3. Then proceed. Do not ask them to confirm each mechanical step.
 
+The canonical public repository is
+`https://github.com/hermes-labs-ai/agent-kickstart`. Use that URL when you need to
+download or identify the source.
+
 ## Install rules
 
 - Put the repository in the folder the user is already working in (or an empty folder they

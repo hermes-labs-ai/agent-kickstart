@@ -12,7 +12,7 @@ You need [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview) 
 
 Open Claude Code in an empty folder and paste this sentence:
 
-> Install Claude Kickstart from https://github.com/hermes-labs-ai/claude-kickstart and walk me through it — I'm new to this.
+> Install Claude Kickstart from https://github.com/hermes-labs-ai/agent-kickstart and walk me through it — I'm new to this.
 
 That is enough. The repository carries its own instructions for the installing agent
 (`AGENTS.md`): it will briefly explain what Kickstart is before downloading anything, keep
@@ -86,18 +86,20 @@ Your portrait, interview notes, progress state, and creations remain local files
 
 This is defense in depth, not an operating-system sandbox. Always read Claude Code's permission prompts before approving them.
 
-## Manual installation
+## Alternative installation
 
-### Python installer preview
+### Python installer from GitHub
 
-This draft branch adds a project-local Python installer. It is not published on PyPI yet. Once this pull request is reviewed and merged, the GitHub form can be tested with:
+Claude Kickstart is not published on PyPI. If you already use Python 3.9 or newer,
+you can install the project-local installer directly from this public repository:
 
 ```sh
-pip install "git+https://github.com/hermes-labs-ai/claude-kickstart.git"
+pip install "git+https://github.com/hermes-labs-ai/agent-kickstart.git"
 claude-kickstart install
 ```
 
-The equivalent module command is `python -m claude_kickstart install`. PyPI installation will be documented only after an authenticated publication is completed and independently verified.
+The equivalent module command is `python -m claude_kickstart install`. A PyPI command
+will be documented only after a package release is independently verified.
 
 If you already downloaded the repository, open a terminal inside it and run:
 
@@ -122,10 +124,10 @@ To stop using it, run `/leave-kickstart`. Because the installation is self-conta
 - **`/kickstart` is not recognized:** type `/exit`; run the exact `cd` command printed by the installer; run `claude`; and try `/kickstart` again. If it still fails, tell Claude: “Verify `.claude/commands/kickstart.md` in this folder and repair only this project-local installation.”
 - **Claude says a required file is missing:** make sure you opened the downloaded `claude-kickstart` folder, then run the installer again. It will explain what is missing without guessing or overwriting files.
 - **Node.js is missing or too old:** install Node.js 18 or newer, confirm `node --version` works, and rerun the installer.
-- **You see a workspace trust screen:** confirm the folder came from `hermes-labs-ai/claude-kickstart`, review the listed project permissions, and proceed only if you trust it.
+- **You see a workspace trust screen:** confirm the folder came from `hermes-labs-ai/agent-kickstart`, review the listed project permissions, and proceed only if you trust it.
 - **You stopped halfway through:** reopen the same folder and run `/kickstart`; your pending stage should resume.
 
-If the problem remains, open a [GitHub issue](https://github.com/hermes-labs-ai/claude-kickstart/issues) without including private portrait or session content.
+If the problem remains, open a [GitHub issue](https://github.com/hermes-labs-ai/agent-kickstart/issues) without including private portrait or session content.
 
 ## Requirements and honest limits
 

@@ -84,7 +84,7 @@ test("beginner quick start is one paste sentence backed by AGENTS.md enforcement
   const agents = fs.readFileSync(path.join(SOURCE, "AGENTS.md"), "utf8");
   // The user-facing paste prompt stays one short sentence in both docs.
   for (const text of [readme, demo]) {
-    assert.match(text, /Install Claude Kickstart from https:\/\/github\.com\/hermes-labs-ai\/claude-kickstart and walk me through it/);
+    assert.match(text, /Install Claude Kickstart from https:\/\/github\.com\/hermes-labs-ai\/agent-kickstart and walk me through it/);
     assert.match(text, /claude "\/kickstart"/);
   }
   // The enforcement the old long prompt carried now lives in AGENTS.md.
