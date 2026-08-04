@@ -29,11 +29,11 @@ test("Python packaging uses Agent Kickstart as the primary identity", () => {
   assert.match(pyproject, /name = "agent-kickstart"/);
   assert.match(pyproject, /agent-kickstart = "agent_kickstart\.cli:main"/);
   assert.match(pyproject, /claude-kickstart = "agent_kickstart\.cli:main"/);
-  assert.match(readme, /Once Agent Kickstart 0\.2\.0 is published/);
   assert.match(readme, /pip install agent-kickstart\nagent-kickstart install/);
   assert.match(readme, /python -m agent_kickstart install/);
-  assert.match(readme, /pip install "git\+https:\/\/github\.com\/hermes-labs-ai\/agent-kickstart\.git"/);
   assert.match(readme, /pip uninstall agent-kickstart/);
   assert.match(readme, /Python helper itself remains installed/);
+  assert.ok(!readme.includes("Once Agent Kickstart 0.2.0 is published"));
+  assert.ok(!readme.includes('pip install "git+https://github.com/hermes-labs-ai/agent-kickstart.git"'));
   assert.ok(!readme.includes("Agent Kickstart is not published on PyPI"));
 });
