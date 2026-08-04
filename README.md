@@ -95,8 +95,8 @@ This is defense in depth, not an operating-system sandbox. Always read Claude Co
 
 ## Python installation
 
-Once Agent Kickstart 0.2.0 is published, install the helper into your current
-Python environment, then run it inside the empty folder where you want to begin:
+Install the helper into your current Python environment, then run it inside the
+empty folder where you want to begin:
 
 ```sh
 pip install agent-kickstart
@@ -109,14 +109,6 @@ terminal. The equivalent module command is `python -m agent_kickstart install`.
 
 If you used an earlier version, the `claude-kickstart` command remains available as a
 compatibility alias. New installations and documentation use `agent-kickstart`.
-
-If PyPI reports that no matching distribution exists, version 0.2.0 has not been released
-yet. You can install the current development source from GitHub instead:
-
-```sh
-pip install "git+https://github.com/hermes-labs-ai/agent-kickstart.git"
-agent-kickstart install
-```
 
 If you already downloaded the repository, open a terminal inside it and run:
 
