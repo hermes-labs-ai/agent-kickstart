@@ -21,10 +21,17 @@ function digest(file) {
 }
 
 function install(repo, home) {
+  const fakeBin = fs.mkdtempSync(path.join(os.tmpdir(), "kickstart-tools-"));
+  const fakeClaude = path.join(fakeBin, "claude");
+  fs.writeFileSync(fakeClaude, "#!/usr/bin/env sh\nexit 0\n", { mode: 0o755 });
   return spawnSync("bash", [path.join(repo, "install.sh")], {
     cwd: os.tmpdir(),
     encoding: "utf8",
-    env: { ...process.env, HOME: home },
+    env: {
+      ...process.env,
+      HOME: home,
+      PATH: `${fakeBin}${path.delimiter}${process.env.PATH ?? ""}`,
+    },
   });
 }
 
