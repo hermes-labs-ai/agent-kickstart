@@ -15,9 +15,9 @@ Cover, in this order, using the user's own creations as examples wherever possib
    They know two: `/kickstart` (start or resume the guided experience) and
    `/leave-kickstart` (turn it off without deleting anything). Everything else is ordinary
    language.
-4. **This folder** — their portrait lives at `claude-kickstart/state/user-portrait.md`
+4. **This folder** — their portrait lives at `agent-kickstart/state/user-portrait.md`
    (theirs to read, correct, or delete); the things they make live in
-   `claude-kickstart/creations/`. Show them a real file of theirs if one exists.
+   `agent-kickstart/creations/`. Show them a real file of theirs if one exists.
 5. **Permission prompts** — when Claude Code asks "allow this?", that is the safety system
    working. Read the prompt; when unsure, say no — nothing breaks by saying no.
 6. **Coming back** — close everything freely. The one start line brings them back and

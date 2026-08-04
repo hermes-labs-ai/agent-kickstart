@@ -3,7 +3,7 @@ description: Leave the guided beginner experience without deleting work
 disable-model-invocation: true
 ---
 
-Run `node claude-kickstart/bin/kickstart-state.mjs leave` from the project root, then plainly tell the user:
+Run `node agent-kickstart/bin/kickstart-state.mjs leave` from the project root, then plainly tell the user:
 
 - guided mode is inactive;
 - their portrait, possibility history, and creations were preserved;
@@ -13,4 +13,4 @@ Run `node claude-kickstart/bin/kickstart-state.mjs leave` from the project root,
 
 If the user's message asked anything else alongside the exit (for example "what do you know about me? and turn this off"), answer that request fully BEFORE running `leave`. An exit request never swallows the other intents in the same message.
 
-Do not delete, reset, or modify their creations. Do not keep applying the Claude Kickstart interaction style after acknowledging the exit.
+Do not delete, reset, or modify their creations. Do not keep applying the Agent Kickstart interaction style after acknowledging the exit.

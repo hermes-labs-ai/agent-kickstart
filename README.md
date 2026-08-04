@@ -1,8 +1,8 @@
-# Claude Kickstart
+# Agent Kickstart
 
 Claude Code becomes much more useful once it understands who you are, what you care about, and how you like to work.
 
-Claude Kickstart gives new users a guided first experience. You speak or type naturally, it learns enough about your world to generate useful possibilities, and then it helps you make or explore something real.
+Agent Kickstart gives new users a guided first experience. You speak or type naturally, it learns enough about your world to generate useful possibilities, and then it helps you make or explore something real.
 
 **You do not need to know how to code.** You can ramble, use dictation, make typos, change your mind, or reject every suggestion.
 
@@ -12,7 +12,7 @@ You need [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview) 
 
 Open Claude Code in an empty folder and paste this sentence:
 
-> Install Claude Kickstart from https://github.com/hermes-labs-ai/agent-kickstart and walk me through it — I'm new to this.
+> Install Agent Kickstart from https://github.com/hermes-labs-ai/agent-kickstart and walk me through it — I'm new to this.
 
 That is enough. The repository carries its own instructions for the installing agent
 (`AGENTS.md`): it will briefly explain what Kickstart is before downloading anything, keep
@@ -33,7 +33,7 @@ Code discovers newly installed project commands — part of installation, not an
 
 ## What your first session feels like
 
-Claude Kickstart will:
+Agent Kickstart will:
 
 1. ask how carefully it should handle actions in the folder;
 2. invite you to describe yourself in your own words;
@@ -67,7 +67,7 @@ You can also say “turn this off” or “go back to normal Claude.” Starting
 
 If onboarding is interrupted, run `/kickstart` again. It resumes from the saved stage.
 
-Your portrait is plain Markdown in `claude-kickstart/state/user-portrait.md`. At any time, say:
+Your portrait is plain Markdown in `agent-kickstart/state/user-portrait.md`. At any time, say:
 
 - “Show me what you think you know about me.”
 - “That is wrong—update my portrait.”
@@ -76,11 +76,11 @@ Your portrait is plain Markdown in `claude-kickstart/state/user-portrait.md`. At
 - “Let me take more control.”
 
 Deletion and reset require confirmation. Both delete the private extracted-history corpus;
-reset preserves everything in `claude-kickstart/creations/`.
+reset preserves everything in `agent-kickstart/creations/`.
 
 ## Safety and privacy
 
-Claude Kickstart stays inside this project by default. It does not change your global Claude settings, inspect unrelated personal files, read common credential files, bypass permissions, or publish anything for you. Consequential actions still require an explanation and your approval.
+Agent Kickstart stays inside this project by default. It does not change your global Claude settings, inspect unrelated personal files, read common credential files, bypass permissions, or publish anything for you. Consequential actions still require an explanation and your approval.
 
 Your portrait, interview notes, progress state, and creations remain local files in the project. After the safety stage, the optional existing-history fast lane performs a local counts-only eligibility scan: it parses candidate transcript messages but writes nothing and returns no content. It extracts eligible transcripts and memory into a private corpus only after an engine-recorded choice; choosing the interview mechanically blocks extraction. That corpus stays in the project and is deleted with either “Delete my portrait” or reset. These state files are ignored by Git so they are not accidentally committed. You can read, edit, or delete them.
 
@@ -90,16 +90,19 @@ This is defense in depth, not an operating-system sandbox. Always read Claude Co
 
 ### Python installer from GitHub
 
-Claude Kickstart is not published on PyPI. If you already use Python 3.9 or newer,
+Agent Kickstart is not published on PyPI. If you already use Python 3.9 or newer,
 you can install the project-local installer directly from this public repository:
 
 ```sh
 pip install "git+https://github.com/hermes-labs-ai/agent-kickstart.git"
-claude-kickstart install
+agent-kickstart install
 ```
 
-The equivalent module command is `python -m claude_kickstart install`. A PyPI command
+The equivalent module command is `python -m agent_kickstart install`. A PyPI command
 will be documented only after a package release is independently verified.
+
+If you used an earlier version, the `claude-kickstart` command remains available as a
+compatibility alias. New installations and documentation use `agent-kickstart`.
 
 If you already downloaded the repository, open a terminal inside it and run:
 
@@ -122,7 +125,7 @@ To stop using it, run `/leave-kickstart`. Because the installation is self-conta
 ## If something does not work
 
 - **`/kickstart` is not recognized:** type `/exit`; run the exact `cd` command printed by the installer; run `claude`; and try `/kickstart` again. If it still fails, tell Claude: “Verify `.claude/commands/kickstart.md` in this folder and repair only this project-local installation.”
-- **Claude says a required file is missing:** make sure you opened the downloaded `claude-kickstart` folder, then run the installer again. It will explain what is missing without guessing or overwriting files.
+- **Claude says a required file is missing:** make sure you opened the downloaded `agent-kickstart` folder, then run the installer again. It will explain what is missing without guessing or overwriting files.
 - **Node.js is missing or too old:** install Node.js 18 or newer, confirm `node --version` works, and rerun the installer.
 - **You see a workspace trust screen:** confirm the folder came from `hermes-labs-ai/agent-kickstart`, review the listed project permissions, and proceed only if you trust it.
 - **You stopped halfway through:** reopen the same folder and run `/kickstart`; your pending stage should resume.
@@ -142,13 +145,13 @@ If the problem remains, open a [GitHub issue](https://github.com/hermes-labs-ai/
 
 ## How it works
 
-Claude Kickstart is a small stateful harness, not a personality quiz or a single sequential prompt. A project command loads its runtime contract; a local state engine records onboarding checkpoints, safe exit, portrait ownership, and evidence-based changes in guidance. Synthetic fixtures verify that different people receive materially different possibilities.
+Agent Kickstart is a small stateful harness, not a personality quiz or a single sequential prompt. A project command loads its runtime contract; a local state engine records onboarding checkpoints, safe exit, portrait ownership, and evidence-based changes in guidance. Synthetic fixtures verify that different people receive materially different possibilities.
 
 See [DEMO.md](DEMO.md) for a ten-minute friend demo and [DEVELOPMENT.md](DEVELOPMENT.md) for architecture and test commands.
 
 ## About
 
-Claude Kickstart is built by [Hermes Labs](https://hermes-labs.ai), an AI reliability
+Agent Kickstart is built by [Hermes Labs](https://hermes-labs.ai), an AI reliability
 engineering studio for production agents and LLM applications. Kickstart brings that work
 to first-time Claude Code users: a guided, project-local way to begin useful work without
 having to learn terminal conventions first.

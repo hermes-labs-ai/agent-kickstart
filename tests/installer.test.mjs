@@ -31,7 +31,7 @@ function install(repo, home) {
 test("shell installer works by absolute path, is repeatable, and writes no temporary HOME", () => {
   const repo = copyRepo();
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "kickstart-home-"));
-  const state = path.join(repo, "claude-kickstart/state/status.json");
+  const state = path.join(repo, "agent-kickstart/state/status.json");
   fs.rmSync(state, { force: true });
   const first = install(repo, home);
   assert.equal(first.status, 0, first.stdout + first.stderr);
@@ -56,7 +56,7 @@ test("shell installer works by absolute path, is repeatable, and writes no tempo
 test("installer never overwrites a locally modified runtime", () => {
   const repo = copyRepo();
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "kickstart-home-"));
-  const runtime = path.join(repo, "claude-kickstart/RUNTIME.md");
+  const runtime = path.join(repo, "agent-kickstart/RUNTIME.md");
   fs.appendFileSync(runtime, "\nLOCAL SENTINEL\n");
   const before = digest(runtime);
   const result = install(repo, home);
@@ -84,7 +84,7 @@ test("beginner quick start is one paste sentence backed by AGENTS.md enforcement
   const agents = fs.readFileSync(path.join(SOURCE, "AGENTS.md"), "utf8");
   // The user-facing paste prompt stays one short sentence in both docs.
   for (const text of [readme, demo]) {
-    assert.match(text, /Install Claude Kickstart from https:\/\/github\.com\/hermes-labs-ai\/agent-kickstart and walk me through it/);
+    assert.match(text, /Install Agent Kickstart from https:\/\/github\.com\/hermes-labs-ai\/agent-kickstart and walk me through it/);
     assert.match(text, /claude "\/kickstart"/);
   }
   // The enforcement the old long prompt carried now lives in AGENTS.md.

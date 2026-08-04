@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(SCRIPT_DIR, "..", "..");
-const HARNESS = path.join(ROOT, "claude-kickstart");
+const HARNESS = path.join(ROOT, "agent-kickstart");
 const STATE_DIR = path.join(HARNESS, "state");
 const CREATIONS_DIR = path.join(HARNESS, "creations");
 const STATUS_FILE = path.join(STATE_DIR, "status.json");
@@ -236,7 +236,7 @@ function recoverJson(file, factory, validator) {
   const replacement = factory();
   writeJson(file, replacement);
   process.stderr.write(
-    `Claude Kickstart recovered malformed state. The original was preserved at ${path.relative(ROOT, backup)}.\n`,
+    `Agent Kickstart recovered malformed state. The original was preserved at ${path.relative(ROOT, backup)}.\n`,
   );
   return validator(replacement);
 }
@@ -324,7 +324,7 @@ function enter() {
 function checkpoint(stage, extra = {}) {
   if (!STAGES.has(stage)) throw new Error(`Unknown checkpoint stage: ${stage}`);
   const status = loadStatus();
-  if (status.mode !== "active") throw new Error("Enter Claude Kickstart before checkpointing onboarding");
+  if (status.mode !== "active") throw new Error("Enter Agent Kickstart before checkpointing onboarding");
   if (stage === "awaiting_history_choice" && status.history_choice === "interview") {
     throw new Error("History was declined; reset or delete the portrait before reopening the fast lane");
   }
@@ -349,7 +349,7 @@ function recordHistoryChoice(choice) {
   }
   const status = loadStatus();
   if (status.mode !== "active") {
-    throw new Error("Enter Claude Kickstart before recording the history choice");
+    throw new Error("Enter Agent Kickstart before recording the history choice");
   }
   if (status.stage !== "awaiting_history_choice") {
     throw new Error("History choice is only valid at awaiting_history_choice");
@@ -376,7 +376,7 @@ function recordHistoryChoice(choice) {
 
 function complete() {
   const status = loadStatus();
-  if (status.mode !== "active") throw new Error("Enter Claude Kickstart before completing onboarding");
+  if (status.mode !== "active") throw new Error("Enter Agent Kickstart before completing onboarding");
   status.onboarding_status = "complete";
   status.stage = "first_action";
   saveStatus(status, "onboarding_complete");
@@ -392,9 +392,9 @@ function leave() {
     ok: true,
     action: "leave",
     preserved: [
-      "claude-kickstart/state/user-portrait.md",
-      "claude-kickstart/state/possibility-history.md",
-      "claude-kickstart/creations/",
+      "agent-kickstart/state/user-portrait.md",
+      "agent-kickstart/state/possibility-history.md",
+      "agent-kickstart/creations/",
     ],
     clean_exit_note: "A fresh Claude Code session removes any residual instructions from the current conversation.",
     re_entry: "The user returns by typing /kickstart. Plain-language phrases will not re-enter guided mode in a fresh session; relay the exact command.",
@@ -435,7 +435,7 @@ function resetConfirmed() {
   return {
     ok: true,
     action: "reset",
-    preserved: ["claude-kickstart/creations/"],
+    preserved: ["agent-kickstart/creations/"],
     private_corpus_deleted: corpusDeleted,
     status: reset,
   };
@@ -682,7 +682,7 @@ function memoryChunks() {
 
 function historyExtract() {
   const status = loadStatus();
-  if (status.mode !== "active") throw new Error("Enter Claude Kickstart before extracting history");
+  if (status.mode !== "active") throw new Error("Enter Agent Kickstart before extracting history");
   if (status.stage !== "awaiting_history_choice" || status.history_choice !== "use-history") {
     throw new Error("History extraction requires the recorded use-history choice");
   }
@@ -830,9 +830,9 @@ function hookContext() {
       portrait = fs.readFileSync(PORTRAIT_FILE, "utf8").slice(0, 1800);
     }
     const context = [
-      "Claude Kickstart guided mode is ACTIVE for this project.",
+      "Agent Kickstart guided mode is ACTIVE for this project.",
       "Use ordinary language as the primary interface; do not require additional slash commands.",
-      "Follow claude-kickstart/RUNTIME.md and claude-kickstart/SAFETY.md. Keep work project-local by default and use normal permission prompts.",
+      "Follow agent-kickstart/RUNTIME.md and agent-kickstart/SAFETY.md. Keep work project-local by default and use normal permission prompts.",
       "If the user asks to exit, inspect/correct/delete their portrait, simplify guidance, show more control, or generate possibilities, route that intent exactly as RUNTIME.md specifies.",
       `Durable status: ${JSON.stringify(status)}.`,
       `Guidance state: ${JSON.stringify({ stage: learning.stage, label: learning.label, preference: learning.guidance_preference })}.`,
@@ -957,7 +957,7 @@ async function main() {
   } catch (error) {
     fail(error instanceof Error ? error.message : String(error), {
       changed: false,
-      next_action: "Run `node claude-kickstart/bin/kickstart-state.mjs doctor` from the repository root.",
+      next_action: "Run `node agent-kickstart/bin/kickstart-state.mjs doctor` from the repository root.",
     });
   }
 }
