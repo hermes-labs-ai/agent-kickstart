@@ -1,10 +1,17 @@
 # Agent Kickstart
 
-Claude Code becomes much more useful once it understands who you are, what you care about, and how you like to work.
+**A guided first project for people new to Claude Code.**
 
-Agent Kickstart gives new users a guided first experience. You speak or type naturally, it learns enough about your world to generate useful possibilities, and then it helps you make or explore something real.
+Agent Kickstart takes you from an empty folder to a concrete starting point: a
+family recipe page, a decision map, a small local helper, or another project
+shaped around what you actually care about. It asks a few questions, separates
+what you said from what it is only inferring, proposes specific projects, and
+begins the one you choose with you.
 
-**You do not need to know how to code.** You can ramble, use dictation, make typos, change your mind, or reject every suggestion.
+**You do not need to know how to code or already be comfortable with a
+terminal.** You can ramble, use dictation, make typos, change your mind, or
+reject every suggestion. Kickstart gives you the one terminal line you need to
+copy and paste.
 
 ## Start here
 
@@ -141,6 +148,10 @@ If the problem remains, open a [GitHub issue](https://github.com/hermes-labs-ai/
 
 ## Requirements and honest limits
 
+- Version 0.2 is intentionally Claude Code-specific. Its project commands,
+  permission settings, lifecycle hooks, native selector, and optional history
+  import use Claude Code surfaces. Supporting Codex or another agent requires a
+  separate adapter and is not claimed in this release.
 - Claude Code 2.1 or newer
 - Node.js 18 or newer
 - Tested on macOS with the current Claude Code CLI
