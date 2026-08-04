@@ -86,23 +86,30 @@ Your portrait, interview notes, progress state, and creations remain local files
 
 This is defense in depth, not an operating-system sandbox. Always read Claude Code's permission prompts before approving them.
 
-## Alternative installation
+## Python installation
 
-### Python installer from GitHub
+Once Agent Kickstart 0.2.0 is published, install the project-local helper from PyPI,
+then run it inside the empty folder where you want to begin:
 
-Agent Kickstart is not published on PyPI. If you already use Python 3.9 or newer,
-you can install the project-local installer directly from this public repository:
+```sh
+pip install agent-kickstart
+agent-kickstart install
+```
+
+The installer checks for Claude Code and Node.js, adds only project-local files, and prints
+the one line that starts your guided session. The equivalent module command is
+`python -m agent_kickstart install`.
+
+If you used an earlier version, the `claude-kickstart` command remains available as a
+compatibility alias. New installations and documentation use `agent-kickstart`.
+
+If PyPI reports that no matching distribution exists, version 0.2.0 has not been released
+yet. You can install the current development source from GitHub instead:
 
 ```sh
 pip install "git+https://github.com/hermes-labs-ai/agent-kickstart.git"
 agent-kickstart install
 ```
-
-The equivalent module command is `python -m agent_kickstart install`. A PyPI command
-will be documented only after a package release is independently verified.
-
-If you used an earlier version, the `claude-kickstart` command remains available as a
-compatibility alias. New installations and documentation use `agent-kickstart`.
 
 If you already downloaded the repository, open a terminal inside it and run:
 
