@@ -21,17 +21,24 @@ function digest(file) {
 }
 
 function install(repo, home) {
+  const fakeBin = fs.mkdtempSync(path.join(os.tmpdir(), "kickstart-tools-"));
+  const fakeClaude = path.join(fakeBin, "claude");
+  fs.writeFileSync(fakeClaude, "#!/usr/bin/env sh\nexit 0\n", { mode: 0o755 });
   return spawnSync("bash", [path.join(repo, "install.sh")], {
     cwd: os.tmpdir(),
     encoding: "utf8",
-    env: { ...process.env, HOME: home },
+    env: {
+      ...process.env,
+      HOME: home,
+      PATH: `${fakeBin}${path.delimiter}${process.env.PATH ?? ""}`,
+    },
   });
 }
 
 test("shell installer works by absolute path, is repeatable, and writes no temporary HOME", () => {
   const repo = copyRepo();
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "kickstart-home-"));
-  const state = path.join(repo, "claude-kickstart/state/status.json");
+  const state = path.join(repo, "agent-kickstart/state/status.json");
   fs.rmSync(state, { force: true });
   const first = install(repo, home);
   assert.equal(first.status, 0, first.stdout + first.stderr);
@@ -56,7 +63,7 @@ test("shell installer works by absolute path, is repeatable, and writes no tempo
 test("installer never overwrites a locally modified runtime", () => {
   const repo = copyRepo();
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "kickstart-home-"));
-  const runtime = path.join(repo, "claude-kickstart/RUNTIME.md");
+  const runtime = path.join(repo, "agent-kickstart/RUNTIME.md");
   fs.appendFileSync(runtime, "\nLOCAL SENTINEL\n");
   const before = digest(runtime);
   const result = install(repo, home);
@@ -84,7 +91,7 @@ test("beginner quick start is one paste sentence backed by AGENTS.md enforcement
   const agents = fs.readFileSync(path.join(SOURCE, "AGENTS.md"), "utf8");
   // The user-facing paste prompt stays one short sentence in both docs.
   for (const text of [readme, demo]) {
-    assert.match(text, /Install Claude Kickstart from https:\/\/github\.com\/hermes-labs-ai\/claude-kickstart and walk me through it/);
+    assert.match(text, /Install Agent Kickstart from https:\/\/github\.com\/hermes-labs-ai\/agent-kickstart and walk me through it/);
     assert.match(text, /claude "\/kickstart"/);
   }
   // The enforcement the old long prompt carried now lives in AGENTS.md.
@@ -113,6 +120,8 @@ test("installer scripts pass local static checks", () => {
     "must be closed and reopened once",
     "type: /exit",
     "COPY THIS ONE LINE",
+    ".Replace(\"'\", \"''\")",
+    "Set-Location -LiteralPath",
     "claude '/kickstart'",
     "workspace trust screen",
     "Yes, I trust this folder",

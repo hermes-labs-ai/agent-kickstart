@@ -25,7 +25,7 @@ Record an evidence event only when observed:
 Use:
 
 ```text
-node claude-kickstart/bin/kickstart-state.mjs evidence <type>
+node agent-kickstart/bin/kickstart-state.mjs evidence <type>
 ```
 
 Never advance because time passed, because the user sounds educated, or because the model feels confident. A request for simpler guidance must take effect immediately. A request for more control may expose one additional mechanism at a time. The user can explicitly choose any stage, and can always reverse it.

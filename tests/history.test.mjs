@@ -19,7 +19,7 @@ function freshRepo(name = "repo") {
 function run(repo, args, options = {}) {
   const result = spawnSync(
     process.execPath,
-    ["claude-kickstart/bin/kickstart-state.mjs", ...args],
+    ["agent-kickstart/bin/kickstart-state.mjs", ...args],
     {
       cwd: repo,
       encoding: "utf8",
@@ -140,7 +140,7 @@ test("history-scan counts interactive sessions only and writes nothing", () => {
   assert.equal(scan.usable_messages, 8); // 5 + 3 usable
   assert.equal(scan.eligible, false); // below both thresholds
   assert.equal(scan.wrote, "nothing");
-  assert.equal(fs.existsSync(path.join(repo, "claude-kickstart/state/pro-corpus.json")), false);
+  assert.equal(fs.existsSync(path.join(repo, "agent-kickstart/state/pro-corpus.json")), false);
 });
 
 test("history-scan reports eligible once session and message thresholds are met", () => {
@@ -184,7 +184,7 @@ test("history-extract writes a provenance-tagged, deduplicated corpus", () => {
   assert.equal(result.memory_chunks, 1);
 
   const corpus = JSON.parse(
-    fs.readFileSync(path.join(repo, "claude-kickstart/state/pro-corpus.json"), "utf8"),
+    fs.readFileSync(path.join(repo, "agent-kickstart/state/pro-corpus.json"), "utf8"),
   );
   assert.equal(corpus.schema_version, 1);
   assert.equal(corpus.transcripts.length, 107);
@@ -242,7 +242,7 @@ test("interview choice is durable and mechanically blocks history extraction", (
 
   chooseHistory(repo, env);
   run(repo, ["history-extract"], { env });
-  const corpus = path.join(repo, "claude-kickstart/state/pro-corpus.json");
+  const corpus = path.join(repo, "agent-kickstart/state/pro-corpus.json");
   assert.equal(fs.existsSync(corpus), true);
   const choice = JSON.parse(run(repo, ["history-choice", "interview"], { env }).stdout);
   assert.equal(choice.status.history_choice, "interview");
@@ -282,7 +282,7 @@ test("portrait-verify enforces verbatim quotes against the extracted corpus", ()
   chooseHistory(repo, env);
   run(repo, ["history-extract"], { env });
 
-  const portrait = path.join(repo, "claude-kickstart/state/user-portrait.md");
+  const portrait = path.join(repo, "agent-kickstart/state/user-portrait.md");
   fs.writeFileSync(
     portrait,
     [

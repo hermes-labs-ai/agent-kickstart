@@ -12,7 +12,7 @@ Say: “I am going to show you a terminal that does not expect you to speak term
 
 Have your friend paste:
 
-> Install Claude Kickstart from https://github.com/hermes-labs-ai/claude-kickstart and walk me through it — I'm new to this.
+> Install Agent Kickstart from https://github.com/hermes-labs-ai/agent-kickstart and walk me through it — I'm new to this.
 
 The repository's `AGENTS.md` instructs the installing agent: it explains the download before doing anything, keeps everything inside the folder, and ends with **one copy-paste line** (`cd -- <folder> && claude "/kickstart"`) — on a Mac the installer also puts it on the clipboard. Have your friend type `/exit`, paste that one line, and approve the workspace trust screen after verifying the folder and permissions. This one reopen is required by Claude Code's native project-command and settings lifecycle; there are no steps to memorize, and the same line is how they come back tomorrow.
 
@@ -22,7 +22,7 @@ Let them choose the safest option. Then encourage dictation or typing:
 
 Do not steer the content. The proof is that the follow-ups and possibilities reflect their language.
 
-When the portrait appears, ask them to correct one thing—even if minor. Then have them choose, combine, or alter a possibility. The demo succeeds when something real starts to exist in `claude-kickstart/creations/`, not when onboarding ends.
+When the portrait appears, ask them to correct one thing—even if minor. Then have them choose, combine, or alter a possibility. The demo succeeds when something real starts to exist in `agent-kickstart/creations/`, not when onboarding ends.
 
 Useful natural-language demonstrations:
 

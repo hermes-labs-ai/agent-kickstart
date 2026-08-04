@@ -8,10 +8,11 @@ import subprocess
 import sys
 from importlib.resources import as_file, files
 from pathlib import Path
+from typing import Optional
 
 
 def asset_root():
-    return files("claude_kickstart").joinpath("assets")
+    return files("agent_kickstart").joinpath("assets")
 
 
 def asset_files(root: Path):
@@ -27,9 +28,17 @@ def require_runtime() -> None:
         )
 
 
+def start_command(target: Path, platform: Optional[str] = None) -> str:
+    platform = sys.platform if platform is None else platform
+    if platform.startswith("win"):
+        quoted_target = str(target).replace("'", "''")
+        return f"Set-Location -LiteralPath '{quoted_target}'; claude '/kickstart'"
+    return f'cd -- {shlex.quote(str(target))} && claude "/kickstart"'
+
+
 def install(target: Path) -> int:
     target = target.resolve()
-    print(f"Installing Claude Kickstart inside: {target}")
+    print(f"Installing Agent Kickstart inside: {target}")
     require_runtime()
     with as_file(asset_root()) as raw_assets:
         assets = Path(raw_assets)
@@ -49,7 +58,7 @@ def install(target: Path) -> int:
             shutil.copyfile(source, dest)
             created += 1
 
-    engine = target / "claude-kickstart/bin/kickstart-state.mjs"
+    engine = target / "agent-kickstart/bin/kickstart-state.mjs"
     engine.chmod(engine.stat().st_mode | 0o100)
     for action in ("init", "doctor"):
         result = subprocess.run(
@@ -58,11 +67,11 @@ def install(target: Path) -> int:
         )
         if result.returncode:
             raise RuntimeError(result.stderr.strip() or result.stdout.strip())
-    print(f"Claude Kickstart is ready. Added {created} missing project-local file(s).")
+    print(f"Agent Kickstart is ready. Added {created} missing project-local file(s).")
     print("Claude Code must be closed and reopened once so the project command loads — part of installation, not an error.")
     print()
     print("──────────────── COPY THIS ONE LINE ────────────────")
-    print(f'cd -- {shlex.quote(str(target))} && claude "/kickstart"')
+    print(start_command(target))
     print("────────────────────────────────────────────────────")
     print()
     print("Paste it into your terminal (type /exit first if you are inside Claude Code). The same line works any time you want to come back.")
@@ -71,14 +80,14 @@ def install(target: Path) -> int:
 
 def uninstall(target: Path) -> int:
     target = target.resolve()
-    print(f"Removing managed Claude Kickstart files from: {target}")
+    print(f"Removing managed Agent Kickstart files from: {target}")
     removed = 0
     preserved = []
     with as_file(asset_root()) as raw_assets:
         assets = Path(raw_assets)
         for source in asset_files(assets):
             relative = source.relative_to(assets)
-            if relative.parts[:2] in (("claude-kickstart", "state"), ("claude-kickstart", "creations")):
+            if relative.parts[:2] in (("agent-kickstart", "state"), ("agent-kickstart", "creations")):
                 continue
             dest = target / relative
             if not dest.exists():
@@ -89,7 +98,7 @@ def uninstall(target: Path) -> int:
             else:
                 preserved.append(relative)
     print(f"Removed {removed} unchanged managed file(s).")
-    print("Your state and claude-kickstart/creations/ were preserved.")
+    print("Your state and agent-kickstart/creations/ were preserved.")
     if preserved:
         print("Locally changed files were also preserved:")
         for path in preserved:
@@ -98,7 +107,7 @@ def uninstall(target: Path) -> int:
 
 
 def parser() -> argparse.ArgumentParser:
-    result = argparse.ArgumentParser(prog="claude-kickstart")
+    result = argparse.ArgumentParser(prog="agent-kickstart")
     sub = result.add_subparsers(dest="command", required=True)
     for name in ("install", "uninstall"):
         command = sub.add_parser(name)
@@ -111,7 +120,7 @@ def main(argv=None) -> int:
     try:
         return install(args.target) if args.command == "install" else uninstall(args.target)
     except RuntimeError as error:
-        print(f"Claude Kickstart could not complete {args.command}.", file=sys.stderr)
+        print(f"Agent Kickstart could not complete {args.command}.", file=sys.stderr)
         print(f"What happened: {error}", file=sys.stderr)
         print("No existing user work was deleted or overwritten.", file=sys.stderr)
         return 1

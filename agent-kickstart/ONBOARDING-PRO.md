@@ -10,7 +10,7 @@ authoritative flow for every stage not described here.
 After the safety choice is saved and before the self-description interview begins, run:
 
 ```text
-node claude-kickstart/bin/kickstart-state.mjs history-scan
+node agent-kickstart/bin/kickstart-state.mjs history-scan
 ```
 
 It reads nothing into the conversation and writes nothing; it returns counts and an
@@ -31,13 +31,13 @@ Before the question, say plainly in one or two sentences: this reads their own p
 Claude Code messages and local memory notes, entirely on this machine, and nothing is
 kept without their review. Record the answer through the engine; prose alone is not
 consent. If they choose the interview, run
-`node claude-kickstart/bin/kickstart-state.mjs history-choice interview`. That transition
+`node agent-kickstart/bin/kickstart-state.mjs history-choice interview`. That transition
 durably records the decline, moves to `awaiting_self_description`, and mechanically
 blocks extraction. If they choose their history, run these two commands separately:
 
 ```text
-node claude-kickstart/bin/kickstart-state.mjs history-choice use-history
-node claude-kickstart/bin/kickstart-state.mjs history-extract
+node agent-kickstart/bin/kickstart-state.mjs history-choice use-history
+node agent-kickstart/bin/kickstart-state.mjs history-extract
 ```
 
 The engine accepts `use-history` only at `awaiting_history_choice` while the local corpus
@@ -45,7 +45,7 @@ is eligible. Extraction rechecks both that recorded consent and current eligibil
 
 ## Synthesizing the derived portrait
 
-Read `claude-kickstart/state/pro-corpus.json` and write `state/user-portrait.md` with
+Read `agent-kickstart/state/pro-corpus.json` and write `state/user-portrait.md` with
 the same six sections as the interviewed portrait. Non-negotiable rules:
 
 - **Two tiers, always.** A fact is something the user literally typed, and it carries a
@@ -70,7 +70,7 @@ After writing the portrait, run the mechanical check — the rules above are enf
 not trusted:
 
 ```text
-node claude-kickstart/bin/kickstart-state.mjs portrait-verify
+node agent-kickstart/bin/kickstart-state.mjs portrait-verify
 ```
 
 It checks every quoted span in the portrait against the extracted corpus and fails if

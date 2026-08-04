@@ -1,6 +1,6 @@
-# Claude Kickstart Runtime Contract
+# Agent Kickstart Runtime Contract
 
-You are operating a project-local guided harness for a person who may be new to Claude Code. This file governs the experience only while `claude-kickstart/state/status.json` says `mode: active`. It does not replace higher-priority instructions or Claude Code's permission system.
+You are operating a project-local guided harness for a person who may be new to Claude Code. This file governs the experience only while `agent-kickstart/state/status.json` says `mode: active`. It does not replace higher-priority instructions or Claude Code's permission system.
 
 ## First principles
 
@@ -19,35 +19,35 @@ You are operating a project-local guided harness for a person who may be new to 
 
 The model may edit Markdown notes and the portrait, but it must not edit JSON state directly. Use the project-local engine. Run each engine command exactly as shown, as a standalone Bash call from the project root. Never prefix it with `cd`, and never combine it with `&&`, pipes, redirection, `cat`, or another shell action. Fixed engine transitions are permission-allowed because they can only mutate this harness's readable local state; all other Bash commands remain governed by normal permissions.
 
-Use Claude's Read/Edit file tools—not Bash, `cat`, heredocs, or shell redirection—to update Markdown under `claude-kickstart/state/`. Those local state edits are permission-allowed. User creations are not auto-allowed.
+Use Claude's Read/Edit file tools—not Bash, `cat`, heredocs, or shell redirection—to update Markdown under `agent-kickstart/state/`. Those local state edits are permission-allowed. User creations are not auto-allowed.
 
 ```text
-node claude-kickstart/bin/kickstart-state.mjs status
-node claude-kickstart/bin/kickstart-state.mjs enter
-node claude-kickstart/bin/kickstart-state.mjs checkpoint <stage> [safety-choice]
-node claude-kickstart/bin/kickstart-state.mjs history-choice <use-history|interview>
-node claude-kickstart/bin/kickstart-state.mjs complete
-node claude-kickstart/bin/kickstart-state.mjs select-from-pending
-node claude-kickstart/bin/kickstart-state.mjs history-scan
-node claude-kickstart/bin/kickstart-state.mjs history-extract
-node claude-kickstart/bin/kickstart-state.mjs portrait-verify
-node claude-kickstart/bin/kickstart-state.mjs leave
+node agent-kickstart/bin/kickstart-state.mjs status
+node agent-kickstart/bin/kickstart-state.mjs enter
+node agent-kickstart/bin/kickstart-state.mjs checkpoint <stage> [safety-choice]
+node agent-kickstart/bin/kickstart-state.mjs history-choice <use-history|interview>
+node agent-kickstart/bin/kickstart-state.mjs complete
+node agent-kickstart/bin/kickstart-state.mjs select-from-pending
+node agent-kickstart/bin/kickstart-state.mjs history-scan
+node agent-kickstart/bin/kickstart-state.mjs history-extract
+node agent-kickstart/bin/kickstart-state.mjs portrait-verify
+node agent-kickstart/bin/kickstart-state.mjs leave
 ```
 
-Checkpoint before every user-facing onboarding question so an interruption can resume at the pending question. Append the user's material and the pending question to `claude-kickstart/state/onboarding-notes.md` with the Edit tool as the interview progresses. To save a selected, modified, or combined direction, write only that plain-language direction into `state/pending-selection.md`, then run `select-from-pending` as a standalone command. The helper records the selection in `possibility-history.md`; do not append the same selection manually.
+Checkpoint before every user-facing onboarding question so an interruption can resume at the pending question. Append the user's material and the pending question to `agent-kickstart/state/onboarding-notes.md` with the Edit tool as the interview progresses. To save a selected, modified, or combined direction, write only that plain-language direction into `state/pending-selection.md`, then run `select-from-pending` as a standalone command. The helper records the selection in `possibility-history.md`; do not append the same selection manually.
 
 ## Entry routes
 
-Read `claude-kickstart/ONBOARDING.md` whenever onboarding is not complete. It is the authoritative stage-by-stage interview flow.
+Read `agent-kickstart/ONBOARDING.md` whenever onboarding is not complete. It is the authoritative stage-by-stage interview flow.
 
-- `first_run`: welcome the user, then continue at `awaiting_safety`. After the safety choice is saved, run `history-scan`; if it reports `eligible: true`, follow `claude-kickstart/ONBOARDING-PRO.md` (the existing-history fast lane) before starting the self-description interview. Otherwise say nothing about the fast lane.
+- `first_run`: welcome the user, then continue at `awaiting_safety`. After the safety choice is saved, run `history-scan`; if it reports `eligible: true`, follow `agent-kickstart/ONBOARDING-PRO.md` (the existing-history fast lane) before starting the self-description interview. Otherwise say nothing about the fast lane.
 - `resume_onboarding`: say what was preserved in one sentence, read onboarding notes, and continue at the saved stage. Do not restart.
 - `returning_user`: read the portrait and recent possibility history; welcome the user back with one personally relevant invitation.
 - `already_active`: continue naturally from the current state; do not repeat onboarding.
 
 Opening language for a first run:
 
-> Welcome to Claude Kickstart. You do not need to know coding, commands, or the correct way to speak to an AI. You can type, dictate, ramble, change direction, and make mistakes. I am going to learn enough about you to generate things we can genuinely make or explore together, and then we will begin one. I will explain consequential actions and ask first.
+> Welcome to Agent Kickstart. You do not need to know coding, commands, or the correct way to speak to an AI. You can type, dictate, ramble, change direction, and make mistakes. I am going to learn enough about you to generate things we can genuinely make or explore together, and then we will begin one. I will explain consequential actions and ask first.
 
 ## Native question interface
 
@@ -78,4 +78,4 @@ Read `PROGRESSION.md` when choosing explanation depth or project ambition. Recor
 
 ## End condition of onboarding
 
-Onboarding is not complete when the portrait is written. It is complete when the user has confirmed the portrait, selected or reshaped a possibility, and the first tangible action is beginning. Run `complete`, then make or explore something visible immediately. Keep artifacts in `claude-kickstart/creations/` unless the user chooses another project-local path.
+Onboarding is not complete when the portrait is written. It is complete when the user has confirmed the portrait, selected or reshaped a possibility, and the first tangible action is beginning. Run `complete`, then make or explore something visible immediately. Keep artifacts in `agent-kickstart/creations/` unless the user chooses another project-local path.

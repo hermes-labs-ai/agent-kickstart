@@ -3,13 +3,13 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "claude-kickstart"
-version = "0.1.0"
+name = "agent-kickstart"
+version = "0.2.0"
 description = "A project-local beginner-facing harness for Claude Code"
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
-authors = [{name = "LPCI"}]
+authors = [{name = "Hermes Labs"}]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Programming Language :: Python :: 3",
@@ -17,11 +17,13 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/hermes-labs-ai/claude-kickstart"
-Repository = "https://github.com/hermes-labs-ai/claude-kickstart"
+Homepage = "https://github.com/hermes-labs-ai/agent-kickstart"
+Repository = "https://github.com/hermes-labs-ai/agent-kickstart"
+Issues = "https://github.com/hermes-labs-ai/agent-kickstart/issues"
 
 [project.scripts]
-claude-kickstart = "claude_kickstart.cli:main"
+agent-kickstart = "agent_kickstart.cli:main"
+claude-kickstart = "agent_kickstart.cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -30,11 +32,11 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-claude_kickstart = [
+agent_kickstart = [
   "assets/.claude/commands/*.md",
   "assets/.claude/settings.json",
-  "assets/claude-kickstart/*.md",
-  "assets/claude-kickstart/bin/*.mjs",
-  "assets/claude-kickstart/state/.gitignore",
-  "assets/claude-kickstart/creations/.gitignore",
+  "assets/agent-kickstart/*.md",
+  "assets/agent-kickstart/bin/*.mjs",
+  "assets/agent-kickstart/state/.gitignore",
+  "assets/agent-kickstart/creations/.gitignore",
 ]

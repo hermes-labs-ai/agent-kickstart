@@ -20,7 +20,7 @@ function freshRepo(name = "repo") {
 function run(repo, args, options = {}) {
   const result = spawnSync(
     process.execPath,
-    ["claude-kickstart/bin/kickstart-state.mjs", ...args],
+    ["agent-kickstart/bin/kickstart-state.mjs", ...args],
     {
       cwd: repo,
       encoding: "utf8",
@@ -45,7 +45,7 @@ function hash(file) {
 
 test("clean initialization and repeated initialization are idempotent", () => {
   const repo = freshRepo("repo with spaces");
-  const state = path.join(repo, "claude-kickstart/state");
+  const state = path.join(repo, "agent-kickstart/state");
   for (const name of [
     "status.json",
     "learning-state.json",
@@ -72,7 +72,7 @@ test("entry, interrupted onboarding, resume, complete, exit, and re-entry", () =
   run(repo, ["checkpoint", "awaiting_self_description", "safest-default"]);
   run(repo, ["checkpoint", "awaiting_followup_1"]);
   run(repo, ["leave"]);
-  assert.equal(json(repo, "claude-kickstart/state/status.json").onboarding_status, "interrupted");
+  assert.equal(json(repo, "agent-kickstart/state/status.json").onboarding_status, "interrupted");
 
   result = JSON.parse(run(repo, ["enter"]).stdout);
   assert.equal(result.route, "resume_onboarding");
@@ -91,22 +91,22 @@ test("session end marks in-progress onboarding interrupted but keeps completed m
   const repo = freshRepo();
   run(repo, ["enter"]);
   run(repo, ["session-end"]);
-  let status = json(repo, "claude-kickstart/state/status.json");
+  let status = json(repo, "agent-kickstart/state/status.json");
   assert.equal(status.mode, "inactive");
   assert.equal(status.onboarding_status, "interrupted");
 
   run(repo, ["enter"]);
   run(repo, ["complete"]);
   run(repo, ["session-end"]);
-  status = json(repo, "claude-kickstart/state/status.json");
+  status = json(repo, "agent-kickstart/state/status.json");
   assert.equal(status.mode, "active");
   assert.equal(status.onboarding_status, "complete");
 });
 
 test("reset requires confirmation and preserves creations", () => {
   const repo = freshRepo();
-  const creation = path.join(repo, "claude-kickstart/creations/keep-me.txt");
-  const corpus = path.join(repo, "claude-kickstart/state/pro-corpus.json");
+  const creation = path.join(repo, "agent-kickstart/creations/keep-me.txt");
+  const corpus = path.join(repo, "agent-kickstart/state/pro-corpus.json");
   fs.writeFileSync(creation, "user work\n");
   fs.writeFileSync(corpus, '{"private":"corpus"}\n');
   run(repo, ["enter"]);
@@ -118,16 +118,16 @@ test("reset requires confirmation and preserves creations", () => {
   assert.equal(fs.readFileSync(creation, "utf8"), "user work\n");
   assert.equal(fs.existsSync(corpus), false);
   assert.equal(result.private_corpus_deleted, true);
-  const status = json(repo, "claude-kickstart/state/status.json");
+  const status = json(repo, "agent-kickstart/state/status.json");
   assert.equal(status.reset_status, "completed");
   assert.equal(status.mode, "inactive");
 });
 
 test("portrait deletion requires confirmation and never deletes creations", () => {
   const repo = freshRepo();
-  const portrait = path.join(repo, "claude-kickstart/state/user-portrait.md");
-  const creation = path.join(repo, "claude-kickstart/creations/artifact.md");
-  const corpus = path.join(repo, "claude-kickstart/state/pro-corpus.json");
+  const portrait = path.join(repo, "agent-kickstart/state/user-portrait.md");
+  const creation = path.join(repo, "agent-kickstart/creations/artifact.md");
+  const corpus = path.join(repo, "agent-kickstart/state/pro-corpus.json");
   fs.writeFileSync(portrait, "private portrait\n");
   fs.writeFileSync(creation, "artifact\n");
   fs.writeFileSync(corpus, '{"private":"corpus"}\n');
@@ -143,25 +143,25 @@ test("portrait deletion requires confirmation and never deletes creations", () =
 
 test("malformed and missing state recover with an evidence backup", () => {
   const repo = freshRepo();
-  const statusFile = path.join(repo, "claude-kickstart/state/status.json");
+  const statusFile = path.join(repo, "agent-kickstart/state/status.json");
   fs.writeFileSync(statusFile, "{not json\n");
   const recovered = run(repo, ["status"]);
   assert.match(recovered.stderr, /preserved at/);
-  assert.equal(json(repo, "claude-kickstart/state/status.json").onboarding_status, "not_started");
+  assert.equal(json(repo, "agent-kickstart/state/status.json").onboarding_status, "not_started");
   const backups = fs.readdirSync(path.dirname(statusFile)).filter((name) => name.includes("status.json.corrupt-"));
   assert.equal(backups.length, 1);
   assert.equal(fs.readFileSync(path.join(path.dirname(statusFile), backups[0]), "utf8"), "{not json\n");
 
   fs.rmSync(statusFile);
   run(repo, ["status"]);
-  assert.equal(json(repo, "claude-kickstart/state/status.json").mode, "inactive");
+  assert.equal(json(repo, "agent-kickstart/state/status.json").mode, "inactive");
 });
 
 test("status files from before history consent migrate without losing user state", () => {
   const repo = freshRepo();
-  const statusFile = path.join(repo, "claude-kickstart/state/status.json");
+  const statusFile = path.join(repo, "agent-kickstart/state/status.json");
   run(repo, ["init"]);
-  const oldStatus = json(repo, "claude-kickstart/state/status.json");
+  const oldStatus = json(repo, "agent-kickstart/state/status.json");
   delete oldStatus.history_choice;
   oldStatus.selected_direction = "Preserve this direction";
   fs.writeFileSync(statusFile, `${JSON.stringify(oldStatus, null, 2)}\n`);
@@ -179,14 +179,14 @@ test("progression uses evidence and supports reversible user guidance", () => {
   const repo = freshRepo();
   run(repo, ["evidence", "modified_suggestion", "changed the second option"]);
   run(repo, ["evidence", "corrected_assumption", "fixed a portrait claim"]);
-  let learning = json(repo, "claude-kickstart/state/learning-state.json");
+  let learning = json(repo, "agent-kickstart/state/learning-state.json");
   assert.equal(learning.stage, 2);
   run(repo, ["guidance", "simpler"]);
-  learning = json(repo, "claude-kickstart/state/learning-state.json");
+  learning = json(repo, "agent-kickstart/state/learning-state.json");
   assert.equal(learning.guidance_preference, "simpler");
   assert.equal(learning.stage, 1);
   run(repo, ["guidance", "advanced"]);
-  learning = json(repo, "claude-kickstart/state/learning-state.json");
+  learning = json(repo, "agent-kickstart/state/learning-state.json");
   assert.equal(learning.guidance_preference, "advanced");
   assert.equal(learning.stage, 2);
 });
@@ -196,7 +196,7 @@ test("hook context is silent when inactive and injects readable context when act
   assert.equal(run(repo, ["hook-context"]).stdout, "");
   run(repo, ["enter"]);
   run(repo, ["complete"]);
-  fs.writeFileSync(path.join(repo, "claude-kickstart/creations/proof.md"), "created\n");
+  fs.writeFileSync(path.join(repo, "agent-kickstart/creations/proof.md"), "created\n");
   const output = run(repo, ["hook-context"]).stdout;
   const hook = JSON.parse(output);
   assert.equal(hook.hookSpecificOutput.hookEventName, "SessionStart");
@@ -207,7 +207,7 @@ test("hook context is silent when inactive and injects readable context when act
 
 test("state directory symlink escaping the repository is refused", { skip: process.platform === "win32" }, () => {
   const repo = freshRepo();
-  const state = path.join(repo, "claude-kickstart/state");
+  const state = path.join(repo, "agent-kickstart/state");
   const outside = fs.mkdtempSync(path.join(os.tmpdir(), "kickstart-outside-"));
   fs.rmSync(state, { recursive: true, force: true });
   fs.symlinkSync(outside, state, "dir");

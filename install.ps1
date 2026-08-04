@@ -13,7 +13,7 @@ function Stop-Install {
         [string]$WhatChanged = 'nothing',
         [string]$NextAction = "Fix the item above, then run '.\install.ps1' again from this folder."
     )
-    Write-Host 'Claude Kickstart could not be initialized.'
+    Write-Host 'Agent Kickstart could not be initialized.'
     Write-Host "What happened: $WhatHappened"
     Write-Host "What changed: $WhatChanged"
     Write-Host "Safest next action: $NextAction"
@@ -40,9 +40,9 @@ $Required = @(
     '.claude\commands\kickstart.md',
     '.claude\commands\leave-kickstart.md',
     '.claude\settings.json',
-    'claude-kickstart\RUNTIME.md',
-    'claude-kickstart\SAFETY.md',
-    'claude-kickstart\bin\kickstart-state.mjs'
+    'agent-kickstart\RUNTIME.md',
+    'agent-kickstart\SAFETY.md',
+    'agent-kickstart\bin\kickstart-state.mjs'
 )
 
 foreach ($Relative in $Required) {
@@ -65,7 +65,7 @@ try {
 
 Push-Location $Root
 try {
-    $InitOutput = & node 'claude-kickstart\bin\kickstart-state.mjs' init 2>&1
+    $InitOutput = & node 'agent-kickstart\bin\kickstart-state.mjs' init 2>&1
     if ($LASTEXITCODE -ne 0) {
         Stop-Install -WhatHappened ($InitOutput -join [Environment]::NewLine) -WhatChanged $Changed
     }
@@ -73,7 +73,7 @@ try {
         $Changed = 'only missing project-local state files were created'
     }
 
-    $DoctorOutput = & node 'claude-kickstart\bin\kickstart-state.mjs' doctor 2>&1
+    $DoctorOutput = & node 'agent-kickstart\bin\kickstart-state.mjs' doctor 2>&1
     if ($LASTEXITCODE -ne 0) {
         Stop-Install -WhatHappened ($DoctorOutput -join [Environment]::NewLine) -WhatChanged $Changed
     }
@@ -81,9 +81,10 @@ try {
     Pop-Location
 }
 
-$StartLine = "Set-Location -LiteralPath '$Root'; claude '/kickstart'"
+$QuotedRoot = $Root.Replace("'", "''")
+$StartLine = "Set-Location -LiteralPath '$QuotedRoot'; claude '/kickstart'"
 
-Write-Host 'Claude Kickstart installation succeeded.'
+Write-Host 'Agent Kickstart installation succeeded.'
 Write-Host "What changed: $Changed."
 Write-Host 'Nothing was written to global Claude Code settings or outside this repository.'
 Write-Host "Open this exact folder: $Root"
