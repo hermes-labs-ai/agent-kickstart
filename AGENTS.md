@@ -37,11 +37,13 @@ download or identify the source.
 
 ## The handoff — make it one paste, zero memorization
 
-End with exactly one copy block and one sentence. The installer prints the block; repeat it
-verbatim so it is the last thing on the user's screen:
+End with exactly one copy block and one sentence. The installer prints the
+platform-correct block; repeat it verbatim so it is the last thing on the
+user's screen. It will use one of these forms:
 
 ```
 cd -- <the exact installed folder> && claude "/kickstart"
+Set-Location -LiteralPath '<the exact installed folder>'; claude '/kickstart'
 ```
 
 Tell them: "Copy that one line, paste it into your terminal after typing /exit here, and

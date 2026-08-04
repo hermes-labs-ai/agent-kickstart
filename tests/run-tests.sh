@@ -6,6 +6,7 @@ ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 bash -n "$ROOT/install.sh"
 node --check "$ROOT/agent-kickstart/bin/kickstart-state.mjs"
 node --test "$ROOT/tests"/*.test.mjs
+PYTHONPATH="$ROOT/src" python3 -m unittest discover -s "$ROOT/tests" -p 'test_*.py'
 
 if command -v shellcheck >/dev/null 2>&1; then
   shellcheck "$ROOT/install.sh" "$ROOT/tests/run-tests.sh"

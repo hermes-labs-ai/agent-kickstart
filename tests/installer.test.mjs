@@ -113,6 +113,8 @@ test("installer scripts pass local static checks", () => {
     "must be closed and reopened once",
     "type: /exit",
     "COPY THIS ONE LINE",
+    ".Replace(\"'\", \"''\")",
+    "Set-Location -LiteralPath",
     "claude '/kickstart'",
     "workspace trust screen",
     "Yes, I trust this folder",

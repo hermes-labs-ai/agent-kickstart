@@ -95,17 +95,17 @@ This is defense in depth, not an operating-system sandbox. Always read Claude Co
 
 ## Python installation
 
-Once Agent Kickstart 0.2.0 is published, install the project-local helper from PyPI,
-then run it inside the empty folder where you want to begin:
+Once Agent Kickstart 0.2.0 is published, install the helper into your current
+Python environment, then run it inside the empty folder where you want to begin:
 
 ```sh
 pip install agent-kickstart
 agent-kickstart install
 ```
 
-The installer checks for Claude Code and Node.js, adds only project-local files, and prints
-the one line that starts your guided session. The equivalent module command is
-`python -m agent_kickstart install`.
+The helper checks for Claude Code and Node.js, copies the Kickstart harness only
+into that project, and prints the correct one-line start command for your
+terminal. The equivalent module command is `python -m agent_kickstart install`.
 
 If you used an earlier version, the `claude-kickstart` command remains available as a
 compatibility alias. New installations and documentation use `agent-kickstart`.
@@ -132,13 +132,22 @@ Windows PowerShell:
 .\install.ps1
 ```
 
-Installation is project-local and repeatable. It initializes only missing state and never overwrites your portrait, history, or creations.
+The harness installation is project-local and repeatable. It initializes only
+missing state and never overwrites your portrait, history, or creations. The
+Python helper itself remains installed in the Python environment where you ran
+`pip install`.
 
-To stop using it, run `/leave-kickstart`. Because the installation is self-contained, you can then archive or remove the repository whenever you no longer need the local portrait or creations. Nothing global needs uninstalling.
+To stop using it, run `/leave-kickstart`. Because the harness is self-contained,
+you can then archive or remove the repository whenever you no longer need the
+local portrait or creations. If you installed the Python helper, remove that
+separately with `pip uninstall agent-kickstart`.
 
 ## If something does not work
 
-- **`/kickstart` is not recognized:** type `/exit`; run the exact `cd` command printed by the installer; run `claude`; and try `/kickstart` again. If it still fails, tell Claude: “Verify `.claude/commands/kickstart.md` in this folder and repair only this project-local installation.”
+- **`/kickstart` is not recognized:** type `/exit` and run the exact start line
+  printed by the installer. If it still fails, tell Claude: “Verify
+  `.claude/commands/kickstart.md` in this folder and repair only this
+  project-local installation.”
 - **Claude says a required file is missing:** make sure you opened the downloaded `agent-kickstart` folder, then run the installer again. It will explain what is missing without guessing or overwriting files.
 - **Node.js is missing or too old:** install Node.js 18 or newer, confirm `node --version` works, and rerun the installer.
 - **You see a workspace trust screen:** confirm the folder came from `hermes-labs-ai/agent-kickstart`, review the listed project permissions, and proceed only if you trust it.

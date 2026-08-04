@@ -8,6 +8,7 @@ import subprocess
 import sys
 from importlib.resources import as_file, files
 from pathlib import Path
+from typing import Optional
 
 
 def asset_root():
@@ -25,6 +26,14 @@ def require_runtime() -> None:
             "Missing required command(s): " + ", ".join(missing) +
             ". Install or repair them, then run this command again."
         )
+
+
+def start_command(target: Path, platform: Optional[str] = None) -> str:
+    platform = sys.platform if platform is None else platform
+    if platform.startswith("win"):
+        quoted_target = str(target).replace("'", "''")
+        return f"Set-Location -LiteralPath '{quoted_target}'; claude '/kickstart'"
+    return f'cd -- {shlex.quote(str(target))} && claude "/kickstart"'
 
 
 def install(target: Path) -> int:
@@ -62,7 +71,7 @@ def install(target: Path) -> int:
     print("Claude Code must be closed and reopened once so the project command loads — part of installation, not an error.")
     print()
     print("──────────────── COPY THIS ONE LINE ────────────────")
-    print(f'cd -- {shlex.quote(str(target))} && claude "/kickstart"')
+    print(start_command(target))
     print("────────────────────────────────────────────────────")
     print()
     print("Paste it into your terminal (type /exit first if you are inside Claude Code). The same line works any time you want to come back.")

@@ -81,7 +81,8 @@ try {
     Pop-Location
 }
 
-$StartLine = "Set-Location -LiteralPath '$Root'; claude '/kickstart'"
+$QuotedRoot = $Root.Replace("'", "''")
+$StartLine = "Set-Location -LiteralPath '$QuotedRoot'; claude '/kickstart'"
 
 Write-Host 'Agent Kickstart installation succeeded.'
 Write-Host "What changed: $Changed."
