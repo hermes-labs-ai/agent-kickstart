@@ -22,7 +22,7 @@ command -v node >/dev/null 2>&1 || fail \
   "nothing" \
   "install Node.js 18 or newer, then run this installer again."
 
-NODE_MAJOR=$(node -p 'Number(process.versions.node.split(".")[0])')
+NODE_MAJOR=$(node -e 'process.stdout.write(String(Number(process.versions.node.split(".")[0])))')
 [ "$NODE_MAJOR" -ge 18 ] || fail \
   "Node.js 18 or newer is required; this computer has $(node --version)." \
   "nothing" \
