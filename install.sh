@@ -5,7 +5,7 @@ ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
 CHANGED="no"
 
 fail() {
-  printf '%s\n' "Claude Kickstart could not be initialized."
+  printf '%s\n' "Agent Kickstart could not be initialized."
   printf '%s\n' "What happened: $1"
   printf '%s\n' "What changed: ${2:-nothing}"
   printf '%s\n' "Safest next action: ${3:-fix the item above, then run 'bash install.sh' again from this folder.}"
@@ -22,7 +22,7 @@ command -v node >/dev/null 2>&1 || fail \
   "nothing" \
   "install Node.js 18 or newer, then run this installer again."
 
-NODE_MAJOR=$(node -p 'Number(process.versions.node.split(".")[0])')
+NODE_MAJOR=$(node -e 'process.stdout.write(String(Number(process.versions.node.split(".")[0])))')
 [ "$NODE_MAJOR" -ge 18 ] || fail \
   "Node.js 18 or newer is required; this computer has $(node --version)." \
   "nothing" \
@@ -32,9 +32,9 @@ for required in \
   ".claude/commands/kickstart.md" \
   ".claude/commands/leave-kickstart.md" \
   ".claude/settings.json" \
-  "claude-kickstart/RUNTIME.md" \
-  "claude-kickstart/SAFETY.md" \
-  "claude-kickstart/bin/kickstart-state.mjs"
+  "agent-kickstart/RUNTIME.md" \
+  "agent-kickstart/SAFETY.md" \
+  "agent-kickstart/bin/kickstart-state.mjs"
 do
   [ -f "$ROOT/$required" ] || fail \
     "A required repository file is missing: $required" \
@@ -48,9 +48,9 @@ node -e 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"))' \
   "$CHANGED" \
   "restore the repository copy of .claude/settings.json, then retry."
 
-chmod u+x "$ROOT/claude-kickstart/bin/kickstart-state.mjs" 2>/dev/null || true
+chmod u+x "$ROOT/agent-kickstart/bin/kickstart-state.mjs" 2>/dev/null || true
 
-if ! INIT_OUTPUT=$(cd "$ROOT" && node claude-kickstart/bin/kickstart-state.mjs init 2>&1); then
+if ! INIT_OUTPUT=$(cd "$ROOT" && node agent-kickstart/bin/kickstart-state.mjs init 2>&1); then
   fail "$INIT_OUTPUT" "$CHANGED"
 fi
 
@@ -58,13 +58,13 @@ if printf '%s' "$INIT_OUTPUT" | grep -q '"changed": true'; then
   CHANGED="only missing project-local state files were created"
 fi
 
-if ! DOCTOR_OUTPUT=$(cd "$ROOT" && node claude-kickstart/bin/kickstart-state.mjs doctor 2>&1); then
+if ! DOCTOR_OUTPUT=$(cd "$ROOT" && node agent-kickstart/bin/kickstart-state.mjs doctor 2>&1); then
   fail "$DOCTOR_OUTPUT" "$CHANGED"
 fi
 
 START_LINE=$(printf 'cd -- %q && claude "/kickstart"' "$ROOT")
 
-printf '%s\n' "Claude Kickstart installation succeeded."
+printf '%s\n' "Agent Kickstart installation succeeded."
 printf '%s\n' "What changed: $CHANGED."
 printf '%s\n' "Nothing was written to global Claude Code settings or outside this repository."
 printf '%s\n' "Open this exact folder: $ROOT"

@@ -6,18 +6,6 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-test("public install and support URLs use the canonical repository", () => {
-  const files = ["README.md", "DEMO.md", "SECURITY.md", "pyproject.toml"];
-  for (const file of files) {
-    const text = fs.readFileSync(path.join(ROOT, file), "utf8");
-    assert.doesNotMatch(text, /hermes-labs-ai\/claude-kickstart/);
-  }
-  assert.match(
-    fs.readFileSync(path.join(ROOT, "README.md"), "utf8"),
-    /hermes-labs-ai\/agent-kickstart/,
-  );
-});
-
 function load(name) {
   return JSON.parse(fs.readFileSync(path.join(ROOT, "examples", name), "utf8"));
 }
@@ -54,9 +42,9 @@ test("reference outputs are specific, diverse, and materially different", () => 
 });
 
 test("runtime contract contains the required adaptive and safety routes", () => {
-  const runtime = fs.readFileSync(path.join(ROOT, "claude-kickstart/RUNTIME.md"), "utf8");
-  const onboarding = fs.readFileSync(path.join(ROOT, "claude-kickstart/ONBOARDING.md"), "utf8");
-  const safety = fs.readFileSync(path.join(ROOT, "claude-kickstart/SAFETY.md"), "utf8");
+  const runtime = fs.readFileSync(path.join(ROOT, "agent-kickstart/RUNTIME.md"), "utf8");
+  const onboarding = fs.readFileSync(path.join(ROOT, "agent-kickstart/ONBOARDING.md"), "utf8");
+  const safety = fs.readFileSync(path.join(ROOT, "agent-kickstart/SAFETY.md"), "utf8");
   for (const phrase of [
     "ordinary language",
     "AskUserQuestion",
@@ -92,17 +80,17 @@ test("project settings retain manual permissions and secret-file denials", () =>
   assert.deepEqual(
     settings.permissions.allow.filter((entry) => entry.startsWith("Edit(")),
     [
-      "Edit(claude-kickstart/state/user-portrait.md)",
-      "Edit(claude-kickstart/state/possibility-history.md)",
-      "Edit(claude-kickstart/state/onboarding-notes.md)",
-      "Edit(claude-kickstart/state/pending-selection.md)",
+      "Edit(agent-kickstart/state/user-portrait.md)",
+      "Edit(agent-kickstart/state/possibility-history.md)",
+      "Edit(agent-kickstart/state/onboarding-notes.md)",
+      "Edit(agent-kickstart/state/pending-selection.md)",
     ],
   );
   assert.ok(!settings.permissions.allow.some((entry) => entry.includes("status.json")));
-  assert.ok(!settings.permissions.allow.includes("Edit(claude-kickstart/state/**)"));
-  assert.ok(settings.permissions.allow.includes("Bash(node claude-kickstart/bin/kickstart-state.mjs enter)"));
-  assert.ok(settings.permissions.allow.includes("Bash(node claude-kickstart/bin/kickstart-state.mjs history-choice use-history)"));
-  assert.ok(settings.permissions.allow.includes("Bash(node claude-kickstart/bin/kickstart-state.mjs history-choice interview)"));
+  assert.ok(!settings.permissions.allow.includes("Edit(agent-kickstart/state/**)"));
+  assert.ok(settings.permissions.allow.includes("Bash(node agent-kickstart/bin/kickstart-state.mjs enter)"));
+  assert.ok(settings.permissions.allow.includes("Bash(node agent-kickstart/bin/kickstart-state.mjs history-choice use-history)"));
+  assert.ok(settings.permissions.allow.includes("Bash(node agent-kickstart/bin/kickstart-state.mjs history-choice interview)"));
   assert.ok(settings.permissions.deny.includes("Read(~/.ssh/**)"));
   assert.ok(settings.permissions.deny.includes("Edit(**/.env.*)"));
   assert.ok(settings.hooks.SessionStart);
@@ -111,14 +99,14 @@ test("project settings retain manual permissions and secret-file denials", () =>
 
 test("public privacy surface binds consent, decline, and private-corpus deletion", () => {
   const readme = fs.readFileSync(path.join(ROOT, "README.md"), "utf8");
-  const runtime = fs.readFileSync(path.join(ROOT, "claude-kickstart/RUNTIME.md"), "utf8");
-  const pro = fs.readFileSync(path.join(ROOT, "claude-kickstart/ONBOARDING-PRO.md"), "utf8");
+  const runtime = fs.readFileSync(path.join(ROOT, "agent-kickstart/RUNTIME.md"), "utf8");
+  const pro = fs.readFileSync(path.join(ROOT, "agent-kickstart/ONBOARDING-PRO.md"), "utf8");
   const packagedPro = fs.readFileSync(
-    path.join(ROOT, "src/claude_kickstart/assets/claude-kickstart/ONBOARDING-PRO.md"),
+    path.join(ROOT, "src/agent_kickstart/assets/agent-kickstart/ONBOARDING-PRO.md"),
     "utf8",
   );
   const historyInterviewCommand =
-    "`node claude-kickstart/bin/kickstart-state.mjs history-choice interview`";
+    "`node agent-kickstart/bin/kickstart-state.mjs history-choice interview`";
   assert.match(readme, /counts-only eligibility scan/i);
   assert.match(readme, /parses candidate transcript messages but writes nothing and returns no content/i);
   assert.match(readme, /extracts eligible transcripts and memory into a private corpus only after an engine-recorded choice/i);

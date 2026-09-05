@@ -13,7 +13,7 @@ Use `AskUserQuestion` with header `Safety`, single-select, and these options in 
 The safest choice is recommended. Save the answer with:
 
 ```text
-node claude-kickstart/bin/kickstart-state.mjs checkpoint awaiting_self_description
+node agent-kickstart/bin/kickstart-state.mjs checkpoint awaiting_self_description
 ```
 
 Then ask the open prompt below in the same response only after the safety selection is known.

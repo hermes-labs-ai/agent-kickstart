@@ -9,10 +9,10 @@ build/
 __pycache__/
 *.egg-info/
 
-# Claude Kickstart's real user data is private and project-local.
-claude-kickstart/state/*.json
-claude-kickstart/state/*.md
-claude-kickstart/creations/*
-!claude-kickstart/state/.gitignore
-!claude-kickstart/creations/.gitignore
+# Agent Kickstart's real user data is private and project-local.
+agent-kickstart/state/*.json
+agent-kickstart/state/*.md
+agent-kickstart/creations/*
+!agent-kickstart/state/.gitignore
+!agent-kickstart/creations/.gitignore
 _workspace/

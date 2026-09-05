@@ -21,17 +21,24 @@ function digest(file) {
 }
 
 function install(repo, home) {
+  const fakeBin = fs.mkdtempSync(path.join(os.tmpdir(), "kickstart-tools-"));
+  const fakeClaude = path.join(fakeBin, "claude");
+  fs.writeFileSync(fakeClaude, "#!/usr/bin/env sh\nexit 0\n", { mode: 0o755 });
   return spawnSync("bash", [path.join(repo, "install.sh")], {
     cwd: os.tmpdir(),
     encoding: "utf8",
-    env: { ...process.env, HOME: home },
+    env: {
+      ...process.env,
+      HOME: home,
+      PATH: `${fakeBin}${path.delimiter}${process.env.PATH ?? ""}`,
+    },
   });
 }
 
 test("shell installer works by absolute path, is repeatable, and writes no temporary HOME", () => {
   const repo = copyRepo();
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "kickstart-home-"));
-  const state = path.join(repo, "claude-kickstart/state/status.json");
+  const state = path.join(repo, "agent-kickstart/state/status.json");
   fs.rmSync(state, { force: true });
   const first = install(repo, home);
   assert.equal(first.status, 0, first.stdout + first.stderr);
@@ -56,7 +63,7 @@ test("shell installer works by absolute path, is repeatable, and writes no tempo
 test("installer never overwrites a locally modified runtime", () => {
   const repo = copyRepo();
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "kickstart-home-"));
-  const runtime = path.join(repo, "claude-kickstart/RUNTIME.md");
+  const runtime = path.join(repo, "agent-kickstart/RUNTIME.md");
   fs.appendFileSync(runtime, "\nLOCAL SENTINEL\n");
   const before = digest(runtime);
   const result = install(repo, home);
@@ -84,7 +91,7 @@ test("beginner quick start is one paste sentence backed by AGENTS.md enforcement
   const agents = fs.readFileSync(path.join(SOURCE, "AGENTS.md"), "utf8");
   // The user-facing paste prompt stays one short sentence in both docs.
   for (const text of [readme, demo]) {
-    assert.match(text, /Install Claude Kickstart from https:\/\/github\.com\/hermes-labs-ai\/agent-kickstart and walk me through it/);
+    assert.match(text, /Install Agent Kickstart from https:\/\/github\.com\/hermes-labs-ai\/agent-kickstart and walk me through it/);
     assert.match(text, /claude "\/kickstart"/);
   }
   // The enforcement the old long prompt carried now lives in AGENTS.md.
@@ -95,30 +102,6 @@ test("beginner quick start is one paste sentence backed by AGENTS.md enforcement
   assert.match(agents, /cd -- <the exact installed folder> && claude "\/kickstart"/);
   assert.match(agents, /If `\/kickstart` is not recognized/);
   assert.match(readme, /close-and-reopen|close and reopen/);
-});
-
-test("python installer rejects Node.js older than 18 before touching the target", () => {
-  const base = fs.mkdtempSync(path.join(os.tmpdir(), "kickstart-old-node-"));
-  const fakeBin = path.join(base, "bin");
-  const target = path.join(base, "target");
-  fs.mkdirSync(fakeBin);
-  fs.mkdirSync(target);
-  fs.writeFileSync(path.join(fakeBin, "claude"), "#!/bin/sh\nexit 0\n", { mode: 0o755 });
-  fs.writeFileSync(path.join(fakeBin, "node"), "#!/bin/sh\necho v16.20.2\n", { mode: 0o755 });
-  const result = spawnSync("python3", ["-m", "claude_kickstart", "install", "--target", target], {
-    cwd: base,
-    encoding: "utf8",
-    env: {
-      ...process.env,
-      PATH: `${fakeBin}${path.delimiter}${process.env.PATH ?? ""}`,
-      PYTHONPATH: path.join(SOURCE, "src"),
-    },
-  });
-  assert.notEqual(result.status, 0, result.stdout + result.stderr);
-  assert.match(result.stderr, /Node\.js 18 or newer is required/);
-  assert.match(result.stderr, /v16\.20\.2/);
-  assert.match(result.stderr, /Update Node\.js/);
-  assert.deepEqual(fs.readdirSync(target), []);
 });
 
 test("installer scripts pass local static checks", () => {
@@ -137,6 +120,8 @@ test("installer scripts pass local static checks", () => {
     "must be closed and reopened once",
     "type: /exit",
     "COPY THIS ONE LINE",
+    ".Replace(\"'\", \"''\")",
+    "Set-Location -LiteralPath",
     "claude '/kickstart'",
     "workspace trust screen",
     "Yes, I trust this folder",

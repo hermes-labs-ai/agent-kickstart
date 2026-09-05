@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Agent Kickstart: a guided first project for people new to Claude Code"
+abstract: "Agent Kickstart takes a user from an empty folder to a concrete starting point: a family recipe page, a decision map, a small local helper, or another project shaped around what they actually care about. It asks a few questions, separates what the user said from what it is only inferring, proposes specific projects, and begins the one the user chooses with them. No coding or terminal experience is required to start."
+type: software
+authors:
+  - family-names: "Bosch Rodriguez"
+    given-names: "Rolando"
+    orcid: "https://orcid.org/0009-0005-4896-1112"
+    affiliation: "Hermes Labs"
+license: MIT
+repository-code: "https://github.com/hermes-labs-ai/agent-kickstart"
+version: "0.2.0"
+keywords:
+  - "Claude Code"
+  - "onboarding"
+  - "guided setup"
+  - "beginner-friendly"
+  - "agent harness"

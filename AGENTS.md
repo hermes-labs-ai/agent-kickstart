@@ -1,24 +1,28 @@
-# Instructions for the agent installing Claude Kickstart
+# Instructions for the agent installing Agent Kickstart
 
-*Claude Kickstart is a [Hermes Labs](https://hermes-labs.ai) project — Epistemic Engineering:
+*Agent Kickstart is a [Hermes Labs](https://hermes-labs.ai) project — Epistemic Engineering:
 the model is the substrate, language is the operations layer. This file is that principle
 applied to installation: the install contract lives in language the installing agent reads,
 not in a prompt the user must carry.*
 
 You are reading this because a user — likely brand-new to Claude Code and possibly to
-terminals entirely — asked you to get Claude Kickstart for them. The enforcement that used
+terminals entirely — asked you to get Agent Kickstart for them. The enforcement that used
 to live in a long paste-prompt lives here instead. Follow it exactly; the user should never
 need to relay rules to you.
 
 ## Before you download or run anything
 
-1. In two or three plain sentences, tell the user what Claude Kickstart is: a guided first
+1. In two or three plain sentences, tell the user what Agent Kickstart is: a guided first
    experience for Claude Code that interviews them briefly, learns what they care about, and
    starts making something real with them — no coding knowledge needed.
 2. Tell them everything will stay inside one project folder, and that after installing they
    will close and reopen Claude Code once so the project command and safety settings can
    load. That reopen is part of installation, not an error.
 3. Then proceed. Do not ask them to confirm each mechanical step.
+
+The canonical public repository is
+`https://github.com/hermes-labs-ai/agent-kickstart`. Use that URL when you need to
+download or identify the source.
 
 ## Install rules
 
@@ -33,11 +37,13 @@ need to relay rules to you.
 
 ## The handoff — make it one paste, zero memorization
 
-End with exactly one copy block and one sentence. The installer prints the block; repeat it
-verbatim so it is the last thing on the user's screen:
+End with exactly one copy block and one sentence. The installer prints the
+platform-correct block; repeat it verbatim so it is the last thing on the
+user's screen. It will use one of these forms:
 
 ```
 cd -- <the exact installed folder> && claude "/kickstart"
+Set-Location -LiteralPath '<the exact installed folder>'; claude '/kickstart'
 ```
 
 Tell them: "Copy that one line, paste it into your terminal after typing /exit here, and
