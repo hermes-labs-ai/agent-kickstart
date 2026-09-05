@@ -30,7 +30,7 @@ if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
         -NextAction 'Install Node.js 18 or newer, then run this installer again.'
 }
 
-$NodeMajor = [int](& node -p 'Number(process.versions.node.split(".")[0])')
+$NodeMajor = [int](& node -e 'process.stdout.write(String(Number(process.versions.node.split(".")[0])))')
 if ($NodeMajor -lt 18) {
     Stop-Install -WhatHappened "Node.js 18 or newer is required; this computer has $(& node --version)." `
         -NextAction 'Update Node.js, then run this installer again.'
