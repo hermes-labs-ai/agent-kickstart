@@ -97,6 +97,30 @@ test("beginner quick start is one paste sentence backed by AGENTS.md enforcement
   assert.match(readme, /close-and-reopen|close and reopen/);
 });
 
+test("python installer rejects Node.js older than 18 before touching the target", () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "kickstart-old-node-"));
+  const fakeBin = path.join(base, "bin");
+  const target = path.join(base, "target");
+  fs.mkdirSync(fakeBin);
+  fs.mkdirSync(target);
+  fs.writeFileSync(path.join(fakeBin, "claude"), "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+  fs.writeFileSync(path.join(fakeBin, "node"), "#!/bin/sh\necho v16.20.2\n", { mode: 0o755 });
+  const result = spawnSync("python3", ["-m", "claude_kickstart", "install", "--target", target], {
+    cwd: base,
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      PATH: `${fakeBin}${path.delimiter}${process.env.PATH ?? ""}`,
+      PYTHONPATH: path.join(SOURCE, "src"),
+    },
+  });
+  assert.notEqual(result.status, 0, result.stdout + result.stderr);
+  assert.match(result.stderr, /Node\.js 18 or newer is required/);
+  assert.match(result.stderr, /v16\.20\.2/);
+  assert.match(result.stderr, /Update Node\.js/);
+  assert.deepEqual(fs.readdirSync(target), []);
+});
+
 test("installer scripts pass local static checks", () => {
   const bashCheck = spawnSync("bash", ["-n", path.join(SOURCE, "install.sh")], { encoding: "utf8" });
   assert.equal(bashCheck.status, 0, bashCheck.stderr);

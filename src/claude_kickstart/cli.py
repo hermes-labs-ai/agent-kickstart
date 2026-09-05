@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import filecmp
+import re
 import shlex
 import shutil
 import subprocess
@@ -18,12 +19,31 @@ def asset_files(root: Path):
     return sorted(path for path in root.rglob("*") if path.is_file())
 
 
+NODE_MINIMUM_MAJOR = 18
+
+
 def require_runtime() -> None:
     missing = [name for name in ("claude", "node") if shutil.which(name) is None]
     if missing:
         raise RuntimeError(
             "Missing required command(s): " + ", ".join(missing) +
             ". Install or repair them, then run this command again."
+        )
+    result = subprocess.run(
+        ["node", "--version"], text=True,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    )
+    version = result.stdout.strip()
+    match = re.match(r"v?(\d+)", version)
+    if result.returncode or not match:
+        raise RuntimeError(
+            "Could not read the Node.js version with 'node --version'. "
+            f"Install or repair Node.js {NODE_MINIMUM_MAJOR} or newer, then run this command again."
+        )
+    if int(match.group(1)) < NODE_MINIMUM_MAJOR:
+        raise RuntimeError(
+            f"Node.js {NODE_MINIMUM_MAJOR} or newer is required; this computer has Node.js {version}. "
+            "Update Node.js, then run this command again."
         )
 
 
