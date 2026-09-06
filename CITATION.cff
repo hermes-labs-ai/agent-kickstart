@@ -10,7 +10,7 @@ authors:
     affiliation: "Hermes Labs"
 license: MIT
 repository-code: "https://github.com/hermes-labs-ai/agent-kickstart"
-version: "0.2.0"
+version: "0.2.1"
 keywords:
   - "Claude Code"
   - "onboarding"
