@@ -21,6 +21,6 @@ jobs:
         with:
           node-version: '18'
       - name: Install declared gate tools
-        run: python3 -m pip install --disable-pip-version-check ruff
+        run: python3 -m pip install --disable-pip-version-check ruff==0.16.6
       - name: Run declared full gate
         run: python3 .hermes/hermes_gate_runner.py full

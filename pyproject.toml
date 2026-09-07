@@ -40,3 +40,9 @@ agent_kickstart = [
   "assets/agent-kickstart/state/.gitignore",
   "assets/agent-kickstart/creations/.gitignore",
 ]
+
+[tool.ruff.lint]
+# Pinned explicitly so a new Ruff release cannot silently change what the
+# Hermes gate enforces. This is Ruff's long-standing default set: Pyflakes
+# plus the pycodestyle errors that catch real defects, not style preferences.
+select = ["E4", "E7", "E9", "F"]

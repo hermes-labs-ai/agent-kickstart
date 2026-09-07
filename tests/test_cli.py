@@ -15,6 +15,17 @@ def tree(root: Path):
     return sorted(str(path.relative_to(root)) for path in root.rglob("*"))
 
 
+def healthy_runtime():
+    """A machine where every runtime the preview checks is already present.
+
+    A preview correctly withholds its commands when claude, node, or git is
+    missing, and CI runners have no claude. Tests whose subject is not the
+    runtime say so explicitly instead of inheriting whatever the test machine
+    happens to have installed; runtime tests patch shutil.which instead.
+    """
+    return patch("agent_kickstart.cli.runtime_findings", return_value=[])
+
+
 class StartCommandTests(unittest.TestCase):
     def test_posix_command_quotes_the_target(self):
         command = start_command(Path("/tmp/project with spaces"), platform="darwin")
@@ -160,7 +171,7 @@ class PlanTests(unittest.TestCase):
             self.assertIn("agent-kickstart/RUNTIME.md", [row["path"] for row in data["files"]])
 
     def test_python_and_javascript_starter_paths_differ_in_commands_only(self):
-        with TemporaryDirectory() as directory:
+        with TemporaryDirectory() as directory, healthy_runtime():
             target = Path(directory) / "project"
             python = plan(target, "python")["data"]
             javascript = plan(target, "javascript")["data"]
@@ -178,7 +189,7 @@ class PlanTests(unittest.TestCase):
                 plan(Path(directory), "rust")
 
     def test_preview_reports_a_conflicting_file_as_a_blocking_finding(self):
-        with TemporaryDirectory() as directory:
+        with TemporaryDirectory() as directory, healthy_runtime():
             target = Path(directory)
             settings = target / ".claude" / "settings.json"
             settings.parent.mkdir(parents=True)
@@ -195,7 +206,7 @@ class PlanTests(unittest.TestCase):
             )
 
     def test_a_conflicting_plan_offers_no_runnable_command(self):
-        with TemporaryDirectory() as directory:
+        with TemporaryDirectory() as directory, healthy_runtime():
             target = Path(directory)
             settings = target / ".claude" / "settings.json"
             settings.parent.mkdir(parents=True)
@@ -216,7 +227,7 @@ class PlanTests(unittest.TestCase):
             self.assertIn("No install command is offered", rendered)
 
     def test_a_clean_plan_still_offers_its_commands(self):
-        with TemporaryDirectory() as directory:
+        with TemporaryDirectory() as directory, healthy_runtime():
             result = plan(Path(directory) / "fresh")
 
             self.assertIsNotNone(result["data"]["setupCommands"])
@@ -224,9 +235,8 @@ class PlanTests(unittest.TestCase):
             self.assertIn("pip install agent-kickstart", render_plan(result))
 
     def test_human_preview_uses_the_command_family_for_the_current_platform(self):
-        with TemporaryDirectory() as directory:
-            with patch("agent_kickstart.cli.runtime_findings", return_value=[]):
-                result = plan(Path(directory) / "fresh", "javascript")
+        with TemporaryDirectory() as directory, healthy_runtime():
+            result = plan(Path(directory) / "fresh", "javascript")
 
         with patch.object(cli.sys, "platform", "win32"):
             windows = render_plan(result)
@@ -321,7 +331,7 @@ class TargetGuardTests(unittest.TestCase):
         self.assertIsNone(cli.protected_root("C:\\Users\\Roli\\my-first-project"))
 
     def test_a_symlinked_managed_path_is_reported_as_a_conflict_not_followed(self):
-        with TemporaryDirectory() as directory:
+        with TemporaryDirectory() as directory, healthy_runtime():
             root = Path(directory)
             target = root / "target"
             outside = root / "outside"
@@ -347,7 +357,7 @@ class TargetGuardTests(unittest.TestCase):
             self.assertEqual(list(outside.iterdir()), [])
 
     def test_javascript_route_is_blocked_for_a_nonempty_existing_target(self):
-        with TemporaryDirectory() as directory:
+        with TemporaryDirectory() as directory, healthy_runtime():
             target = Path(directory) / "existing-project"
             target.mkdir()
             (target / "app.py").write_text("print('hi')\n")

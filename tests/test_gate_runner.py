@@ -5,10 +5,17 @@ checks while withholding it from tools that open the files themselves.
 """
 
 import importlib.util
+import sys
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
+
+# The runner reads its profile with tomllib and refuses to import on anything
+# older. Agent Kickstart itself still supports Python 3.9, so the product tests
+# must keep running there; only this module's subject is unavailable.
+if sys.version_info < (3, 11):
+    raise unittest.SkipTest("the Hermes Gate runner requires Python 3.11 or newer")
 
 RUNNER = Path(__file__).resolve().parent.parent / ".hermes" / "hermes_gate_runner.py"
 
