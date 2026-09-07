@@ -11,6 +11,8 @@ Agent Kickstart has no third-party runtime dependencies. Claude Code provides th
 - `agent-kickstart/SAFETY.md` and `PROGRESSION.md` define safety and evidence-based adaptation.
 - `agent-kickstart/bin/kickstart-state.mjs` owns validated, atomic local state transitions.
 - `examples/` contains synthetic personalization fixtures, never real user data.
+- `src/agent_kickstart/cli.py` owns install, uninstall, and the write-free `plan` preview.
+- `src/agent_kickstart/evidence.py` builds the shared result envelope (`hermes.reliability-lab.result/1`): tool, version, status, input hash, findings, exit code, timestamp, optional Git SHA, and whether the run was a `preview` or `executed`.
 
 ## Test
 

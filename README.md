@@ -93,6 +93,37 @@ Your portrait, interview notes, progress state, and creations remain local files
 
 This is defense in depth, not an operating-system sandbox. Always read Claude Code's permission prompts before approving them.
 
+## Preview before you install
+
+Before anything is written, you can see exactly what an installation would do:
+
+```sh
+agent-kickstart plan --target ./my-first-project
+```
+
+`plan` writes nothing anywhere. It lists every file Kickstart would manage and
+whether each one would be created, is already identical, or conflicts with a
+file you already have; to tell those apart, it compares the bytes of the
+managed files already present against the versions it would install. On the
+JavaScript route it also checks whether the target folder is empty, which means
+listing that folder's entries — it does not open them. It reports whether
+Claude Code and Node.js are present, and prints the exact commands you would
+run, including the one-line start command — except when a finding means those
+commands would fail, in which case it withholds them and says so.
+
+With `--json`, the record carries a `gitSha` field describing the checkout
+Agent Kickstart is running from, read with `git rev-parse HEAD` and `git status
+--porcelain`. If you installed into a Python environment that lives inside one
+of your own Git repositories, that is the repository whose commit and
+clean-or-dirty state the field reports.
+
+`agent-kickstart install --dry-run` is the same human-readable preview. Add
+`--path javascript` to either preview command to inspect the
+repository-and-installer route instead of the Python one. For a
+machine-readable result record, use `agent-kickstart plan --json`.
+
+Nothing is installed until you run `agent-kickstart install` yourself.
+
 ## Python installation
 
 Install the helper into your current Python environment, then run it inside the
