@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
@@ -54,6 +55,7 @@ def _git(start: Path, *arguments: str):
         return subprocess.run(
             ["git", "-C", str(start), *arguments],
             text=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=5,
+            env={**os.environ, "GIT_OPTIONAL_LOCKS": "0"},
         )
     except (OSError, subprocess.SubprocessError):
         return None

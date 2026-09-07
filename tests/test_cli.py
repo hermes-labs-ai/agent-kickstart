@@ -204,6 +204,23 @@ class PlanTests(unittest.TestCase):
             self.assertIsNotNone(result["data"]["startCommand"])
             self.assertIn("pip install agent-kickstart", render_plan(result))
 
+    def test_human_preview_uses_the_command_family_for_the_current_platform(self):
+        with TemporaryDirectory() as directory:
+            with patch("agent_kickstart.cli.runtime_findings", return_value=[]):
+                result = plan(Path(directory) / "fresh", "javascript")
+
+        with patch.object(cli.sys, "platform", "win32"):
+            windows = render_plan(result)
+        self.assertIn(".\\install.ps1", windows)
+        self.assertIn("Set-Location -LiteralPath", windows)
+        self.assertNotIn("bash install.sh", windows)
+
+        with patch.object(cli.sys, "platform", "darwin"):
+            posix = render_plan(result)
+        self.assertIn("bash install.sh", posix)
+        self.assertIn("cd --", posix)
+        self.assertNotIn(".\\install.ps1", posix)
+
     def test_input_hash_is_stable_for_the_same_input_and_moves_with_it(self):
         with TemporaryDirectory() as directory:
             target = Path(directory) / "project"
@@ -388,6 +405,18 @@ class EnvelopeTests(unittest.TestCase):
 
             (root / "a.txt").write_text("two\n")
             self.assertEqual(evidence.git_sha(root), f"{clean}-dirty")
+
+    @patch("agent_kickstart.evidence.subprocess.run")
+    def test_git_sha_disables_optional_locks_for_every_metadata_probe(self, run):
+        run.side_effect = [
+            subprocess.CompletedProcess([], 0, stdout="abc123\n"),
+            subprocess.CompletedProcess([], 0, stdout=""),
+        ]
+
+        self.assertEqual(evidence.git_sha(Path("/tmp/project")), "abc123")
+        self.assertEqual(len(run.call_args_list), 2)
+        for call in run.call_args_list:
+            self.assertEqual(call.kwargs["env"]["GIT_OPTIONAL_LOCKS"], "0")
 
     def test_declared_version_matches_the_packaging_metadata(self):
         pyproject = (Path(__file__).resolve().parent.parent / "pyproject.toml").read_text()

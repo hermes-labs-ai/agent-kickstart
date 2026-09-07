@@ -413,12 +413,13 @@ def render_plan(result: dict) -> str:
         lines.append("No install command is offered for this target — see the findings above.")
         lines.append("")
     else:
+        command_family = "windows" if sys.platform.startswith("win") else "posix"
         lines.append("Commands you would run:")
-        for command in data["setupCommands"]["posix"]:
+        for command in data["setupCommands"][command_family]:
             lines.append(f"  $ {command}")
         lines.append("")
         lines.append("Then, to start Kickstart:")
-        lines.append(f"  $ {data['startCommand']['posix']}")
+        lines.append(f"  $ {data['startCommand'][command_family]}")
         lines.append("")
     lines.append(f"Result: {result['status']} (preview, exit {result['exitCode']}). No files were changed.")
     return "\n".join(lines)
