@@ -289,7 +289,9 @@ def plan(target: Path, starter_path: str = "python") -> dict:
             "Use an empty or new folder for --path javascript, or use the Python "
             "route (pip install agent-kickstart) to add Kickstart into this folder instead.",
         ))
-    offer_commands = not refused and not clone_blocked
+    # Conflicts stop the installer before it changes anything, so a command
+    # offered here would be one the person pastes only to watch it refuse.
+    offer_commands = not refused and not clone_blocked and not summary["conflict"]
 
     exit_code = 1 if evidence.worst_status(findings) == "fail" else 0
     return evidence.envelope(
@@ -308,9 +310,9 @@ def plan(target: Path, starter_path: str = "python") -> dict:
             "refused": refused,
             "files": rows,
             "summary": summary,
-            # An unusable target or a blocked route gets no runnable commands:
-            # offering one would invite a person to paste the exact thing that
-            # was just found to fail.
+            # Any blocking finding gets no runnable commands: offering one
+            # would invite a person to paste the exact thing that was just
+            # found to fail.
             "setupCommands": setup_commands(resolved, starter_path) if offer_commands else None,
             "startCommand": {
                 "posix": start_command(resolved, platform="darwin"),

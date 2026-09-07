@@ -6,7 +6,9 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from agent_kickstart import __version__, cli, evidence
-from agent_kickstart.cli import install, main, plan, runtime_findings, start_command
+from agent_kickstart.cli import (
+    install, main, plan, render_plan, runtime_findings, start_command,
+)
 
 
 def tree(root: Path):
@@ -136,6 +138,35 @@ class PlanTests(unittest.TestCase):
                 "target.conflicting-files",
                 [item["id"] for item in result["findings"]],
             )
+
+    def test_a_conflicting_plan_offers_no_runnable_command(self):
+        with TemporaryDirectory() as directory:
+            target = Path(directory)
+            settings = target / ".claude" / "settings.json"
+            settings.parent.mkdir(parents=True)
+            settings.write_text('{"mine": true}\n')
+
+            result = plan(target)
+
+            # The JSON record carries no command an install would refuse.
+            self.assertIsNone(result["data"]["setupCommands"])
+            self.assertIsNone(result["data"]["startCommand"])
+            self.assertNotIn("agent-kickstart install", json.dumps(result))
+
+            # Neither does the human rendering of the same result.
+            rendered = render_plan(result)
+            self.assertNotIn("pip install agent-kickstart", rendered)
+            self.assertNotIn('claude "/kickstart"', rendered)
+            self.assertNotIn("$ ", rendered, "no pasteable command line at all")
+            self.assertIn("No install command is offered", rendered)
+
+    def test_a_clean_plan_still_offers_its_commands(self):
+        with TemporaryDirectory() as directory:
+            result = plan(Path(directory) / "fresh")
+
+            self.assertIsNotNone(result["data"]["setupCommands"])
+            self.assertIsNotNone(result["data"]["startCommand"])
+            self.assertIn("pip install agent-kickstart", render_plan(result))
 
     def test_input_hash_is_stable_for_the_same_input_and_moves_with_it(self):
         with TemporaryDirectory() as directory:

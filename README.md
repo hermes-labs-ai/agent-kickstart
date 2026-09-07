@@ -103,13 +103,23 @@ agent-kickstart plan --target ./my-first-project
 
 `plan` writes nothing anywhere. It lists every file Kickstart would manage and
 whether each one would be created, is already identical, or conflicts with a
-file you already have — to tell the difference, it compares only the exact
-files Kickstart manages against the versions it would install, and reads
-nothing else in your project. It reports whether Claude Code and Node.js are
-present, and prints the exact commands you would run, including the one-line
-start command. `agent-kickstart install --dry-run` is the same preview. Add
-`--path javascript` to preview the repository-and-installer route instead of
-the Python one, and `--json` for a machine-readable result record.
+file you already have; to tell those apart, it compares the bytes of the
+managed files already present against the versions it would install. On the
+JavaScript route it also checks whether the target folder is empty, which means
+listing that folder's entries — it does not open them. It reports whether
+Claude Code and Node.js are present, and prints the exact commands you would
+run, including the one-line start command — except when a finding means those
+commands would fail, in which case it withholds them and says so.
+
+With `--json`, the record carries a `gitSha` field describing the checkout
+Agent Kickstart is running from, read with `git rev-parse HEAD` and `git status
+--porcelain`. If you installed into a Python environment that lives inside one
+of your own Git repositories, that is the repository whose commit and
+clean-or-dirty state the field reports.
+
+`agent-kickstart install --dry-run` is the same preview. Add `--path javascript`
+to preview the repository-and-installer route instead of the Python one, and
+`--json` for a machine-readable result record.
 
 Nothing is installed until you run `agent-kickstart install` yourself.
 
