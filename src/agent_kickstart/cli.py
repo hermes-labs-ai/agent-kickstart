@@ -9,7 +9,7 @@ import shutil
 import subprocess
 import sys
 from importlib.resources import as_file, files
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import List, Optional, Tuple
 
 from . import __version__
@@ -116,11 +116,53 @@ def runtime_findings(starter_path: str = "python") -> List[dict]:
 
 # Install rules that used to live only in AGENTS.md prose. A beginner-facing
 # installer should not depend on the installing agent remembering them.
-SYSTEM_TARGETS = (
-    "/", "/bin", "/sbin", "/usr", "/etc", "/var", "/opt", "/tmp",
+#
+# Roots protected together with everything beneath them: installing into
+# /usr/local/share or C:\Program Files\Kickstart is as wrong as installing
+# directly into the root itself.
+SYSTEM_ROOTS = (
+    "/bin", "/sbin", "/usr", "/etc", "/var", "/opt",
     "/System", "/Library", "/Applications",
-    "C:\\", "C:\\Windows", "C:\\Program Files", "C:\\Program Files (x86)",
+    "C:\\Windows", "C:\\Program Files", "C:\\Program Files (x86)",
 )
+
+# Roots protected only as the exact target. Every path on the machine lives
+# beneath "/" or "C:\", and the scratch folder a person is handed lives
+# beneath /tmp, so a project folder inside these is ordinary and allowed.
+SYSTEM_EXACT_ROOTS = ("/", "/tmp", "C:\\")
+
+WINDOWS_PATH = re.compile(r"^[A-Za-z]:[\\/]")
+
+
+def path_parts(text: str) -> Tuple[str, ...]:
+    """Comparable path components, case-folded only where the platform is.
+
+    Windows treats C:\\WINDOWS and C:\\Windows as one folder, so a comparison
+    that respected case there would let a protected root through under a
+    different spelling. POSIX is case-sensitive, so folding it instead would
+    refuse a legitimate /Usr or /Opt a person owns.
+    """
+    if WINDOWS_PATH.match(text):
+        return tuple(part.lower() for part in PureWindowsPath(text).parts)
+    return PurePosixPath(text).parts
+
+
+def protected_root(target: str) -> Optional[str]:
+    """The system root `target` is equal to or sits beneath, if any.
+
+    Components are compared component-wise, never as string prefixes, so
+    C:\\Program Files (x86) is not mistaken for a child of C:\\Program Files
+    and /usrland is not mistaken for a child of /usr.
+    """
+    parts = path_parts(target)
+    for root in SYSTEM_EXACT_ROOTS:
+        if parts == path_parts(root):
+            return root
+    for root in SYSTEM_ROOTS:
+        root_parts = path_parts(root)
+        if parts[:len(root_parts)] == root_parts:
+            return root
+    return None
 
 
 def target_problem(target: Path) -> Optional[Tuple[str, str]]:
@@ -132,11 +174,16 @@ def target_problem(target: Path) -> Optional[Tuple[str, str]]:
             "Agent Kickstart installs into a folder; point --target at a folder "
             "(existing or new) instead of a file.",
         )
-    normalized = str(target).rstrip("/\\") or "/"
-    if normalized in {entry.rstrip("/\\") or "/" for entry in SYSTEM_TARGETS}:
+    root = protected_root(str(target))
+    if root is not None:
+        placement = (
+            f"{target} is a system path"
+            if path_parts(str(target)) == path_parts(root)
+            else f"{target} is inside {root}, a system path"
+        )
         return (
             "target.system-path",
-            f"{target} is a system path. Agent Kickstart only installs into a project "
+            f"{placement}. Agent Kickstart only installs into a project "
             "folder you own; make or choose a project folder and use it as --target.",
         )
     if target == Path.home():

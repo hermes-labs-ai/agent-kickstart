@@ -239,6 +239,51 @@ class TargetGuardTests(unittest.TestCase):
         self.assertIn("target.system-path", [item["id"] for item in result["findings"]])
         self.assertEqual(result["exitCode"], 1)
 
+    def test_a_folder_beneath_a_system_root_is_refused_before_anything_is_written(self):
+        # A path that does not exist: refusal comes from the guard, not from
+        # anything found on disk, and nothing under /usr is created or read.
+        beneath = Path("/usr/local/lib/agent-kickstart-regression")
+
+        result = plan(beneath)
+
+        self.assertIn("target.system-path", [item["id"] for item in result["findings"]])
+        self.assertTrue(result["data"]["refused"])
+        self.assertEqual(result["data"]["files"], [])
+        self.assertIsNone(result["data"]["setupCommands"])
+        self.assertIsNone(result["data"]["startCommand"])
+        self.assertEqual(result["exitCode"], 1)
+        # install() refuses the same target before it opens the asset tree.
+        self.assertEqual(main(["install", "--target", str(beneath)]), 1)
+        self.assertFalse(beneath.exists())
+
+    def test_posix_roots_match_descendants_and_stay_case_sensitive(self):
+        self.assertEqual(cli.protected_root("/usr"), "/usr")
+        self.assertEqual(cli.protected_root("/usr/local/lib/kickstart"), "/usr")
+        self.assertEqual(cli.protected_root("/Library/Preferences/kickstart"), "/Library")
+        # POSIX is case-sensitive, so a folder a person owns is not a root.
+        self.assertIsNone(cli.protected_root("/USR/local"))
+        # Component-wise comparison: /usrland is not inside /usr.
+        self.assertIsNone(cli.protected_root("/usrland/kickstart"))
+        # Scratch space is refused as the target itself, allowed beneath it.
+        self.assertEqual(cli.protected_root("/tmp"), "/tmp")
+        self.assertIsNone(cli.protected_root("/tmp/my-first-project"))
+
+    def test_windows_roots_match_descendants_case_insensitively(self):
+        self.assertEqual(cli.protected_root("C:\\Windows"), "C:\\Windows")
+        self.assertEqual(
+            cli.protected_root("C:\\WINDOWS\\System32\\kickstart"), "C:\\Windows"
+        )
+        self.assertEqual(
+            cli.protected_root("c:/program files/Kickstart"), "C:\\Program Files"
+        )
+        # The (x86) root is its own folder, not a child of "C:\\Program Files".
+        self.assertEqual(
+            cli.protected_root("C:\\program files (x86)\\kickstart"),
+            "C:\\Program Files (x86)",
+        )
+        self.assertEqual(cli.protected_root("C:\\"), "C:\\")
+        self.assertIsNone(cli.protected_root("C:\\Users\\Roli\\my-first-project"))
+
     def test_a_symlinked_managed_path_is_reported_as_a_conflict_not_followed(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)
