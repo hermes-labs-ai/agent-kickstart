@@ -179,10 +179,11 @@ class EnvelopeTests(unittest.TestCase):
             root = Path(directory)
             self.assertIsNone(evidence.git_sha(root), "a non-repository has no commit")
 
-            run = lambda *args: subprocess.run(
-                ["git", "-C", str(root), *args], check=True,
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-            )
+            def run(*args):
+                return subprocess.run(
+                    ["git", "-C", str(root), *args], check=True,
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                )
             run("init", "-q")
             run("config", "user.email", "test@example.invalid")
             run("config", "user.name", "Test")
