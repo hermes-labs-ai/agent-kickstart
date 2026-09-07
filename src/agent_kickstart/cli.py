@@ -193,7 +193,9 @@ def plan(target: Path, starter_path: str = "python") -> dict:
     """Describe an installation without touching the file system.
 
     Returns a Hermes Reliability Lab result envelope. Nothing under `target`
-    is created, read for content, or modified.
+    is created, written, or modified. To classify a managed file as already
+    installed or conflicting, its bytes are compared against the version
+    Agent Kickstart would install; nothing else under `target` is read.
     """
     if starter_path not in STARTER_PATHS:
         raise RuntimeError(
