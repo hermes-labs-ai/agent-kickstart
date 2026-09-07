@@ -39,6 +39,11 @@ def _changed(root: Path) -> list[str]:
         ("ls-files", "--others", "--exclude-standard", "-z"),
     ):
         proc = subprocess.run(["git", "-C", str(root), *args], capture_output=True, check=False)
+        if proc.returncode:
+            detail = proc.stderr.decode("utf-8", "replace").strip()
+            command = "git " + " ".join(args)
+            suffix = f": {detail}" if detail else ""
+            raise RuntimeError(f"{command} exited {proc.returncode}{suffix}")
         values.update(x.decode("utf-8", "surrogateescape") for x in proc.stdout.split(b"\0") if x)
     return sorted(values)
 
@@ -66,7 +71,13 @@ def run(
         config = tomllib.loads(config_path.read_text(encoding="utf-8"))
     except Exception as exc:
         return _result(mode, "ERROR", started, [], f"invalid profile: {exc}")
-    paths = list(files) if files is not None else _changed(root)
+    if files is not None:
+        paths = list(files)
+    else:
+        try:
+            paths = _changed(root)
+        except (OSError, RuntimeError) as exc:
+            return _result(mode, "FAIL", started, [], f"changed-file inventory failed: {exc}")
     exclusions = config.get("gate", {}).get("exclusions", [])
     paths = [path for path in paths if not any(_match(path, pattern) for pattern in exclusions)]
     # A deletion is a real change. Dropping it here would hand a pure-deletion
@@ -120,8 +131,14 @@ def _execute(argv: list[str], root: Path, timeout: float, name: str) -> dict[str
             stderr=subprocess.PIPE,
             start_new_session=True,
         )
-    except FileNotFoundError:
-        return {"name": name, "argv": argv, "status": "FAIL", "reason": "executable unavailable"}
+    except OSError as exc:
+        detail = exc.strerror or str(exc)
+        return {
+            "name": name,
+            "argv": argv,
+            "status": "FAIL",
+            "reason": f"{name} launch failed: {detail}",
+        }
 
     stdout_capture: dict[str, object] = {"data": b"", "total": 0}
     stderr_capture: dict[str, object] = {"data": b"", "total": 0}

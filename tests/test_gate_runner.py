@@ -8,6 +8,7 @@ import importlib.util
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 RUNNER = Path(__file__).resolve().parent.parent / ".hermes" / "hermes_gate_runner.py"
 
@@ -87,6 +88,52 @@ class DeletedPathSelectionTests(unittest.TestCase):
             names = checks_by_name(result)
             self.assertIn("diff-check", names)
             self.assertNotIn("live-tool", names)
+
+
+class GateFailureTests(unittest.TestCase):
+    def setUp(self):
+        self.runner = load_runner()
+
+    def test_each_failed_git_inventory_command_fails_the_gate(self):
+        commands = ("diff", "diff", "ls-files")
+        for failed_index, command in enumerate(commands):
+            with self.subTest(command=command, occurrence=failed_index):
+                responses = [
+                    self.runner.subprocess.CompletedProcess([], 0, stdout=b"kept.txt\0", stderr=b"")
+                    for _ in range(failed_index)
+                ]
+                responses.append(
+                    self.runner.subprocess.CompletedProcess(
+                        [], 128, stdout=b"partial.txt\0", stderr=b"inventory error"
+                    )
+                )
+                with TemporaryDirectory() as directory:
+                    root = profiled_root(directory)
+                    with patch.object(self.runner.subprocess, "run", side_effect=responses) as run:
+                        result = self.runner.run("fast", root=root)
+
+                self.assertEqual(result["status"], "FAIL")
+                self.assertEqual(result["checks"], [])
+                self.assertIn("changed-file inventory failed", result["reason"])
+                self.assertIn("inventory error", result["reason"])
+                self.assertEqual(run.call_count, failed_index + 1)
+
+    def test_execute_reports_ordinary_launch_errors_as_structured_failures(self):
+        failures = (
+            PermissionError(13, "Permission denied"),
+            OSError(8, "Exec format error"),
+        )
+        for failure in failures:
+            with self.subTest(error=failure.strerror):
+                with patch.object(self.runner.subprocess, "Popen", side_effect=failure):
+                    result = self.runner._execute(
+                        ["broken-check"], Path("/tmp"), 1.0, "launch-check"
+                    )
+
+                self.assertEqual(result["status"], "FAIL")
+                self.assertEqual(result["name"], "launch-check")
+                self.assertIn("launch-check launch failed", result["reason"])
+                self.assertIn(failure.strerror, result["reason"])
 
 
 if __name__ == "__main__":
