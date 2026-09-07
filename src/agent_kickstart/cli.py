@@ -29,6 +29,7 @@ def asset_files(root: Path):
 
 
 NODE_MINIMUM_MAJOR = 18
+NODE_PROBE_TIMEOUT_SECONDS = 5.0
 
 
 def require_runtime() -> None:
@@ -73,10 +74,23 @@ def runtime_findings() -> List[dict]:
     if any(item["id"] == "runtime.node.missing" for item in findings):
         return findings
 
-    result = subprocess.run(
-        ["node", "--version"], text=True,
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-    )
+    # A preview must answer even when the probe does not: a hung or unrunnable
+    # `node` becomes an honest "unknown", never a hang or an escaped traceback.
+    try:
+        result = subprocess.run(
+            ["node", "--version"], text=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            timeout=NODE_PROBE_TIMEOUT_SECONDS,
+        )
+    except (OSError, subprocess.SubprocessError):
+        findings.append(evidence.finding(
+            "runtime.node.version", "unknown",
+            "'node --version' could not be run or did not answer within "
+            f"{NODE_PROBE_TIMEOUT_SECONDS:g} seconds.",
+            "Confirm 'node --version' works, install or repair Node.js "
+            f"{NODE_MINIMUM_MAJOR} or newer, then run this again.",
+        ))
+        return findings
     version = result.stdout.strip()
     match = re.match(r"v?(\d+)", version)
     if result.returncode or not match:

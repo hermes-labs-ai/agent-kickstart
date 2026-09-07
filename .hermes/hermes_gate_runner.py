@@ -49,6 +49,11 @@ def _match(path: str, pattern: str) -> bool:
     )
 
 
+def _git_aware(argv: list[object]) -> bool:
+    """Whether a check reads paths through Git rather than opening them."""
+    return "diff-check" in argv
+
+
 def run(
     mode: str, *, root: Path | None = None, files: list[str] | None = None
 ) -> dict[str, object]:
@@ -62,9 +67,12 @@ def run(
     except Exception as exc:
         return _result(mode, "ERROR", started, [], f"invalid profile: {exc}")
     paths = list(files) if files is not None else _changed(root)
-    paths = [path for path in paths if os.path.lexists(root / path)]
     exclusions = config.get("gate", {}).get("exclusions", [])
     paths = [path for path in paths if not any(_match(path, pattern) for pattern in exclusions)]
+    # A deletion is a real change. Dropping it here would hand a pure-deletion
+    # diff to no check at all, so only tools that open the files themselves get
+    # the live-file filter; Git-aware checks still see the deleted path.
+    live_paths = [path for path in paths if os.path.lexists(root / path)]
     if mode == "fast" and not paths:
         return _result(mode, "NOT_APPLICABLE", started, [], "no changed files")
     commands = list(config.get(mode, []))
@@ -76,11 +84,13 @@ def run(
     checks: list[dict[str, object]] = []
     for spec in commands:
         globs = spec.get("globs", ["**/*"])
-        selected = [path for path in paths if any(_match(path, pattern) for pattern in globs)]
+        template = list(spec.get("argv", []))
+        candidates = paths if _git_aware(template) else live_paths
+        selected = [path for path in candidates if any(_match(path, pattern) for pattern in globs)]
         if mode == "fast" and not selected:
             continue
         argv: list[str] = []
-        for part in spec.get("argv", []):
+        for part in template:
             argv.extend(selected if part == "{files}" else [part])
         if not argv or any(not isinstance(part, str) for part in argv):
             return _result(mode, "ERROR", started, checks, "argv must be a non-empty string array")

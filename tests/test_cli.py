@@ -5,8 +5,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
-from agent_kickstart import __version__, evidence
-from agent_kickstart.cli import install, main, plan, start_command
+from agent_kickstart import __version__, cli, evidence
+from agent_kickstart.cli import install, main, plan, runtime_findings, start_command
 
 
 def tree(root: Path):
@@ -44,6 +44,42 @@ class RuntimeRequirementTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "Node.js 18 or newer is required"):
                 install(target)
             self.assertEqual(list(target.iterdir()), [])
+
+
+class NodeProbeTests(unittest.TestCase):
+    @patch("agent_kickstart.cli.subprocess.run")
+    @patch("agent_kickstart.cli.shutil.which", return_value="/tmp/fake-command")
+    def test_the_preview_probe_is_bounded_by_a_timeout(self, _which, run):
+        run.return_value.returncode = 0
+        run.return_value.stdout = "v18.20.2\n"
+        run.return_value.stderr = ""
+
+        runtime_findings()
+
+        self.assertEqual(
+            run.call_args.kwargs.get("timeout"), cli.NODE_PROBE_TIMEOUT_SECONDS
+        )
+
+    @patch("agent_kickstart.cli.shutil.which", return_value="/tmp/fake-command")
+    def test_a_hanging_probe_becomes_an_unknown_finding(self, _which):
+        expired = subprocess.TimeoutExpired(cmd=["node", "--version"], timeout=5.0)
+        with patch("agent_kickstart.cli.subprocess.run", side_effect=expired):
+            findings = runtime_findings()
+
+        self.assertEqual([item["id"] for item in findings], ["runtime.node.version"])
+        self.assertEqual(findings[0]["severity"], "unknown")
+
+    @patch("agent_kickstart.cli.shutil.which", return_value="/tmp/fake-command")
+    def test_an_unrunnable_probe_leaves_the_preview_intact(self, _which):
+        with patch("agent_kickstart.cli.subprocess.run", side_effect=OSError("boom")):
+            with TemporaryDirectory() as directory:
+                result = plan(Path(directory) / "project")
+
+        self.assertEqual(result["mode"], "preview")
+        self.assertIn("runtime.node.version", [item["id"] for item in result["findings"]])
+        # "unknown" outranks the warn findings but is not a failure.
+        self.assertEqual(result["status"], "unknown")
+        self.assertEqual(result["exitCode"], 0)
 
 
 class PlanTests(unittest.TestCase):
