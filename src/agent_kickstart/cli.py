@@ -57,14 +57,20 @@ def require_runtime() -> None:
         )
 
 
-def runtime_findings() -> List[dict]:
+def runtime_findings(starter_path: str = "python") -> List[dict]:
     """The same checks require_runtime() enforces, reported instead of raised.
 
     A preview has to survive a machine that is not ready yet: the point is to
     show the person what is missing, not to refuse to describe the plan.
     """
     findings = []
-    for name, label in (("claude", "Claude Code"), ("node", "Node.js")):
+    checks = [("claude", "Claude Code"), ("node", "Node.js")]
+    if starter_path == "javascript":
+        # The javascript route's first offered command is `git clone`, so a
+        # missing `git` would fail that command exactly like a missing node
+        # or claude would fail the others.
+        checks.append(("git", "Git"))
+    for name, label in checks:
         if shutil.which(name) is None:
             findings.append(evidence.finding(
                 f"runtime.{name}.missing", "fail",
@@ -250,11 +256,13 @@ def plan(target: Path, starter_path: str = "python") -> dict:
         refused = True
     else:
         refused = False
-        runtime_issues = runtime_findings()
+        runtime_issues = runtime_findings(starter_path)
         findings.extend(runtime_issues)
-        # Every case runtime_findings() reports — missing, unreadable, timed
-        # out, or too old — is a case require_runtime() would raise on, so
-        # install() would refuse before writing anything.
+        # Every claude/node case runtime_findings() reports — missing,
+        # unreadable, timed out, or too old — is a case require_runtime()
+        # would raise on, so install() would refuse before writing anything.
+        # On the javascript route it also reports a missing `git`, which
+        # would fail the offered `git clone` command instead.
         runtime_blocked = bool(runtime_issues)
         with as_file(asset_root()) as raw_assets:
             rows = file_actions(Path(raw_assets), resolved)

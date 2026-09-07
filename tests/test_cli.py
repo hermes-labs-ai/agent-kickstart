@@ -97,6 +97,28 @@ class NodeProbeTests(unittest.TestCase):
         self.assertIsNone(result["data"]["setupCommands"])
         self.assertIsNone(result["data"]["startCommand"])
 
+    def test_python_path_does_not_require_git(self):
+        with patch(
+            "agent_kickstart.cli.shutil.which",
+            side_effect=lambda name: None if name == "git" else "/tmp/fake-command",
+        ):
+            findings = runtime_findings("python")
+
+        self.assertNotIn("runtime.git.missing", [item["id"] for item in findings])
+
+    def test_javascript_path_withholds_the_git_clone_command_without_git(self):
+        with patch(
+            "agent_kickstart.cli.shutil.which",
+            side_effect=lambda name: None if name == "git" else "/tmp/fake-command",
+        ):
+            with TemporaryDirectory() as directory:
+                result = plan(Path(directory) / "project", "javascript")
+
+        self.assertIn("runtime.git.missing", [item["id"] for item in result["findings"]])
+        self.assertEqual(result["exitCode"], 1)
+        self.assertIsNone(result["data"]["setupCommands"])
+        self.assertIsNone(result["data"]["startCommand"])
+
 
 class PlanTests(unittest.TestCase):
     def test_preview_writes_nothing_inside_an_isolated_temp_fixture(self):
