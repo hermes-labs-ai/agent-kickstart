@@ -136,6 +136,50 @@ class TargetGuardTests(unittest.TestCase):
         self.assertIn("target.system-path", [item["id"] for item in result["findings"]])
         self.assertEqual(result["exitCode"], 1)
 
+    def test_a_symlinked_managed_path_is_reported_as_a_conflict_not_followed(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / "target"
+            outside = root / "outside"
+            target.mkdir()
+            outside.mkdir()
+            (target / ".claude").symlink_to(outside)
+
+            result = plan(target)
+            actions = {row["path"]: row["action"] for row in result["data"]["files"]}
+            self.assertEqual(actions[".claude/commands/kickstart.md"], "conflict")
+            self.assertEqual(result["status"], "fail")
+
+    def test_install_never_writes_through_a_symlinked_managed_path(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / "target"
+            outside = root / "outside"
+            target.mkdir()
+            outside.mkdir()
+            (target / ".claude").symlink_to(outside)
+
+            self.assertEqual(main(["install", "--target", str(target)]), 1)
+            self.assertEqual(list(outside.iterdir()), [])
+
+    def test_javascript_route_is_blocked_for_a_nonempty_existing_target(self):
+        with TemporaryDirectory() as directory:
+            target = Path(directory) / "existing-project"
+            target.mkdir()
+            (target / "app.py").write_text("print('hi')\n")
+
+            result = plan(target, "javascript")
+            self.assertIn(
+                "target.javascript-clone-nonempty",
+                [item["id"] for item in result["findings"]],
+            )
+            self.assertEqual(result["status"], "fail")
+            self.assertIsNone(result["data"]["setupCommands"])
+            self.assertIsNone(result["data"]["startCommand"])
+            # The Python route still works for the same existing folder.
+            python_result = plan(target, "python")
+            self.assertIsNotNone(python_result["data"]["setupCommands"])
+
 
 class EnvelopeTests(unittest.TestCase):
     def test_plan_emits_a_serializable_reliability_lab_envelope(self):

@@ -174,12 +174,30 @@ def setup_commands(target: Path, starter_path: str) -> dict:
     }
 
 
+def managed_symlink(target: Path, relative: Path) -> Optional[Path]:
+    """The first symlink among a managed path's components under target, if any.
+
+    Kickstart never creates a symlink itself, so one appearing anywhere along
+    a managed path — the file itself or a parent — could redirect a create or
+    compare through it to somewhere outside `target`. Treat that path as
+    unusable rather than following the link.
+    """
+    current = target
+    for part in relative.parts:
+        current = current / part
+        if current.is_symlink():
+            return current
+    return None
+
+
 def file_actions(assets: Path, target: Path) -> List[dict]:
     rows = []
     for source in asset_files(assets):
         relative = source.relative_to(assets)
         dest = target / relative
-        if not dest.exists():
+        if managed_symlink(target, relative) is not None:
+            action = "conflict"
+        elif not dest.exists():
             action = "create"
         elif dest.is_file() and filecmp.cmp(source, dest, shallow=False):
             action = "unchanged"
@@ -241,6 +259,24 @@ def plan(target: Path, starter_path: str = "python") -> dict:
                 "Confirm this is the folder you meant before running the install command.",
             ))
 
+    # The JavaScript route clones the whole repository into `target`, and Git
+    # refuses to clone into a directory that already has anything in it — even
+    # when none of Kickstart's own managed files would conflict.
+    clone_blocked = (
+        not refused and starter_path == "javascript"
+        and resolved.is_dir() and any(resolved.iterdir())
+    )
+    if clone_blocked:
+        findings.append(evidence.finding(
+            "target.javascript-clone-nonempty", "fail",
+            f"{resolved} already has files in it. The JavaScript route clones the "
+            "repository directly into --target, and Git refuses to clone into a "
+            "non-empty folder.",
+            "Use an empty or new folder for --path javascript, or use the Python "
+            "route (pip install agent-kickstart) to add Kickstart into this folder instead.",
+        ))
+    offer_commands = not refused and not clone_blocked
+
     exit_code = 1 if evidence.worst_status(findings) == "fail" else 0
     return evidence.envelope(
         tool=TOOL,
@@ -258,13 +294,14 @@ def plan(target: Path, starter_path: str = "python") -> dict:
             "refused": refused,
             "files": rows,
             "summary": summary,
-            # A refused target gets no runnable commands: offering one would
-            # invite a person to paste the exact thing the guard just blocked.
-            "setupCommands": None if refused else setup_commands(resolved, starter_path),
-            "startCommand": None if refused else {
+            # An unusable target or a blocked route gets no runnable commands:
+            # offering one would invite a person to paste the exact thing that
+            # was just found to fail.
+            "setupCommands": setup_commands(resolved, starter_path) if offer_commands else None,
+            "startCommand": {
                 "posix": start_command(resolved, platform="darwin"),
                 "windows": start_command(resolved, platform="win32"),
-            },
+            } if offer_commands else None,
         },
     )
 
@@ -292,8 +329,8 @@ def render_plan(result: dict) -> str:
             if item.get("detail"):
                 lines.append(f"            {item['detail']}")
         lines.append("")
-    if data["refused"]:
-        lines.append("No install command is offered for this target — choose a project folder and preview again.")
+    if data["setupCommands"] is None:
+        lines.append("No install command is offered for this target — see the findings above.")
         lines.append("")
     else:
         lines.append("Commands you would run:")
@@ -367,6 +404,9 @@ def uninstall(target: Path) -> int:
             if relative.parts[:2] in (("agent-kickstart", "state"), ("agent-kickstart", "creations")):
                 continue
             dest = target / relative
+            if managed_symlink(target, relative) is not None:
+                preserved.append(relative)
+                continue
             if not dest.exists():
                 continue
             if dest.is_file() and filecmp.cmp(source, dest, shallow=False):
