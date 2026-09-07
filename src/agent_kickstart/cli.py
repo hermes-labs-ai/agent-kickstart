@@ -32,6 +32,14 @@ NODE_MINIMUM_MAJOR = 18
 NODE_PROBE_TIMEOUT_SECONDS = 5.0
 
 
+def _probe_node_version():
+    return subprocess.run(
+        ["node", "--version"], text=True,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        timeout=NODE_PROBE_TIMEOUT_SECONDS,
+    )
+
+
 def require_runtime() -> None:
     missing = [name for name in ("claude", "node") if shutil.which(name) is None]
     if missing:
@@ -39,10 +47,13 @@ def require_runtime() -> None:
             "Missing required command(s): " + ", ".join(missing) +
             ". Install or repair them, then run this command again."
         )
-    result = subprocess.run(
-        ["node", "--version"], text=True,
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-    )
+    try:
+        result = _probe_node_version()
+    except (OSError, subprocess.SubprocessError):
+        raise RuntimeError(
+            "Could not read the Node.js version with 'node --version'. "
+            f"Install or repair Node.js {NODE_MINIMUM_MAJOR} or newer, then run this command again."
+        ) from None
     version = result.stdout.strip()
     match = re.match(r"v?(\d+)", version)
     if result.returncode or not match:
@@ -83,11 +94,7 @@ def runtime_findings(starter_path: str = "python") -> List[dict]:
     # A preview must answer even when the probe does not: a hung or unrunnable
     # `node` becomes an honest "unknown", never a hang or an escaped traceback.
     try:
-        result = subprocess.run(
-            ["node", "--version"], text=True,
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            timeout=NODE_PROBE_TIMEOUT_SECONDS,
-        )
+        result = _probe_node_version()
     except (OSError, subprocess.SubprocessError):
         findings.append(evidence.finding(
             "runtime.node.version", "unknown",

@@ -47,6 +47,25 @@ class RuntimeRequirementTests(unittest.TestCase):
                 install(target)
             self.assertEqual(list(target.iterdir()), [])
 
+    @patch("agent_kickstart.cli.subprocess.run")
+    @patch("agent_kickstart.cli.shutil.which", return_value="/tmp/fake-command")
+    def test_installer_refuses_a_timed_out_node_probe_before_writing(
+        self, _which, run
+    ):
+        run.side_effect = subprocess.TimeoutExpired(
+            cmd=["node", "--version"], timeout=cli.NODE_PROBE_TIMEOUT_SECONDS
+        )
+
+        with TemporaryDirectory() as directory:
+            target = Path(directory)
+            with self.assertRaisesRegex(RuntimeError, "Could not read the Node.js version"):
+                install(target)
+            self.assertEqual(list(target.iterdir()), [])
+
+        self.assertEqual(
+            run.call_args.kwargs["timeout"], cli.NODE_PROBE_TIMEOUT_SECONDS
+        )
+
 
 class NodeProbeTests(unittest.TestCase):
     @patch("agent_kickstart.cli.subprocess.run")
