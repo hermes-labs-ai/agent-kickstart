@@ -117,9 +117,10 @@ Agent Kickstart is running from, read with `git rev-parse HEAD` and `git status
 of your own Git repositories, that is the repository whose commit and
 clean-or-dirty state the field reports.
 
-`agent-kickstart install --dry-run` is the same preview. Add `--path javascript`
-to preview the repository-and-installer route instead of the Python one, and
-`--json` for a machine-readable result record.
+`agent-kickstart install --dry-run` is the same human-readable preview. Add
+`--path javascript` to either preview command to inspect the
+repository-and-installer route instead of the Python one. For a
+machine-readable result record, use `agent-kickstart plan --json`.
 
 Nothing is installed until you run `agent-kickstart install` yourself.
 
