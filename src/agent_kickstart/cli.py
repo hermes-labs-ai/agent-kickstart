@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import filecmp
+import json
 import re
 import shlex
 import shutil
@@ -9,7 +10,14 @@ import subprocess
 import sys
 from importlib.resources import as_file, files
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional, Tuple
+
+from . import __version__
+from . import evidence
+
+TOOL = "agent-kickstart"
+REPOSITORY = "https://github.com/hermes-labs-ai/agent-kickstart"
+STARTER_PATHS = ("python", "javascript")
 
 
 def asset_root():
@@ -48,6 +56,87 @@ def require_runtime() -> None:
         )
 
 
+def runtime_findings() -> List[dict]:
+    """The same checks require_runtime() enforces, reported instead of raised.
+
+    A preview has to survive a machine that is not ready yet: the point is to
+    show the person what is missing, not to refuse to describe the plan.
+    """
+    findings = []
+    for name, label in (("claude", "Claude Code"), ("node", "Node.js")):
+        if shutil.which(name) is None:
+            findings.append(evidence.finding(
+                f"runtime.{name}.missing", "fail",
+                f"{label} is not available in your command path.",
+                f"Install or repair {label}, confirm '{name} --version' works, then run this again.",
+            ))
+    if any(item["id"] == "runtime.node.missing" for item in findings):
+        return findings
+
+    result = subprocess.run(
+        ["node", "--version"], text=True,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    )
+    version = result.stdout.strip()
+    match = re.match(r"v?(\d+)", version)
+    if result.returncode or not match:
+        findings.append(evidence.finding(
+            "runtime.node.version", "unknown",
+            "Could not read the Node.js version with 'node --version'.",
+            f"Install or repair Node.js {NODE_MINIMUM_MAJOR} or newer, then run this again.",
+        ))
+    elif int(match.group(1)) < NODE_MINIMUM_MAJOR:
+        findings.append(evidence.finding(
+            "runtime.node.version", "fail",
+            f"Node.js {NODE_MINIMUM_MAJOR} or newer is required; this computer has Node.js {version}.",
+            "Update Node.js, then run this again.",
+        ))
+    return findings
+
+
+# Install rules that used to live only in AGENTS.md prose. A beginner-facing
+# installer should not depend on the installing agent remembering them.
+SYSTEM_TARGETS = (
+    "/", "/bin", "/sbin", "/usr", "/etc", "/var", "/opt", "/tmp",
+    "/System", "/Library", "/Applications",
+    "C:\\", "C:\\Windows", "C:\\Program Files", "C:\\Program Files (x86)",
+)
+
+
+def target_problem(target: Path) -> Optional[Tuple[str, str]]:
+    """Return (finding id, beginner-readable reason) if this target is unusable."""
+    if target.exists() and not target.is_dir():
+        return (
+            "target.not-a-folder",
+            f"{target} already exists and is not a folder. "
+            "Agent Kickstart installs into a folder; point --target at a folder "
+            "(existing or new) instead of a file.",
+        )
+    normalized = str(target).rstrip("/\\") or "/"
+    if normalized in {entry.rstrip("/\\") or "/" for entry in SYSTEM_TARGETS}:
+        return (
+            "target.system-path",
+            f"{target} is a system path. Agent Kickstart only installs into a project "
+            "folder you own; make or choose a project folder and use it as --target.",
+        )
+    if target == Path.home():
+        return (
+            "target.home-root",
+            f"{target} is your home directory itself. Agent Kickstart keeps everything "
+            "inside one project folder; make a new folder inside your home directory "
+            "and use that as --target.",
+        )
+    return None
+
+
+def resolved_target(target: Path) -> Path:
+    resolved = target.resolve()
+    problem = target_problem(resolved)
+    if problem:
+        raise RuntimeError(problem[1])
+    return resolved
+
+
 def start_command(target: Path, platform: Optional[str] = None) -> str:
     platform = sys.platform if platform is None else platform
     if platform.startswith("win"):
@@ -56,22 +145,188 @@ def start_command(target: Path, platform: Optional[str] = None) -> str:
     return f'cd -- {shlex.quote(str(target))} && claude "/kickstart"'
 
 
+def setup_commands(target: Path, starter_path: str) -> dict:
+    """The commands a person actually types, per supported starter path."""
+    posix_target = shlex.quote(str(target))
+    windows_target = "'" + str(target).replace("'", "''") + "'"
+    if starter_path == "python":
+        return {
+            "posix": [
+                "pip install agent-kickstart",
+                f"agent-kickstart install --target {posix_target}",
+            ],
+            "windows": [
+                "pip install agent-kickstart",
+                f"agent-kickstart install --target {windows_target}",
+            ],
+        }
+    return {
+        "posix": [
+            f"git clone {REPOSITORY} {posix_target}",
+            f"cd -- {posix_target}",
+            "bash install.sh",
+        ],
+        "windows": [
+            f"git clone {REPOSITORY} {windows_target}",
+            f"Set-Location -LiteralPath {windows_target}",
+            ".\\install.ps1",
+        ],
+    }
+
+
+def file_actions(assets: Path, target: Path) -> List[dict]:
+    rows = []
+    for source in asset_files(assets):
+        relative = source.relative_to(assets)
+        dest = target / relative
+        if not dest.exists():
+            action = "create"
+        elif dest.is_file() and filecmp.cmp(source, dest, shallow=False):
+            action = "unchanged"
+        else:
+            action = "conflict"
+        rows.append({"path": relative.as_posix(), "action": action, "bytes": source.stat().st_size})
+    return rows
+
+
+def plan(target: Path, starter_path: str = "python") -> dict:
+    """Describe an installation without touching the file system.
+
+    Returns a Hermes Reliability Lab result envelope. Nothing under `target`
+    is created, read for content, or modified.
+    """
+    if starter_path not in STARTER_PATHS:
+        raise RuntimeError(
+            f"Unknown starter path: {starter_path}. Choose one of: {', '.join(STARTER_PATHS)}."
+        )
+    resolved = target.resolve()
+    inputs = {
+        "command": "plan",
+        "starterPath": starter_path,
+        "target": str(resolved),
+    }
+    findings: List[dict] = []
+    rows: List[dict] = []
+    summary = {"create": 0, "unchanged": 0, "conflict": 0}
+
+    problem = target_problem(resolved)
+    if problem:
+        findings.append(evidence.finding(problem[0], "fail", problem[1], path=str(resolved)))
+        refused = True
+    else:
+        refused = False
+        findings.extend(runtime_findings())
+        with as_file(asset_root()) as raw_assets:
+            rows = file_actions(Path(raw_assets), resolved)
+        for row in rows:
+            summary[row["action"]] += 1
+        if summary["conflict"]:
+            findings.append(evidence.finding(
+                "target.conflicting-files", "fail",
+                f"{summary['conflict']} existing file(s) differ from the versions Agent Kickstart installs.",
+                "Installation would stop before changing anything. Move or review these paths, then retry.",
+            ))
+        elif summary["create"] == 0:
+            findings.append(evidence.finding(
+                "target.already-installed", "warn",
+                "Every managed file is already present and unchanged.",
+                "Installing again would create nothing; the start command below still works.",
+            ))
+        if not resolved.exists():
+            findings.append(evidence.finding(
+                "target.will-be-created", "warn",
+                f"{resolved} does not exist yet and would be created.",
+                "Confirm this is the folder you meant before running the install command.",
+            ))
+
+    exit_code = 1 if evidence.worst_status(findings) == "fail" else 0
+    return evidence.envelope(
+        tool=TOOL,
+        tool_version=__version__,
+        command="plan",
+        mode="preview",
+        findings=findings,
+        inputs=inputs,
+        exit_code=exit_code,
+        sha=evidence.git_sha(Path(__file__).resolve().parent),
+        data={
+            "starterPath": starter_path,
+            "target": str(resolved),
+            "repository": REPOSITORY,
+            "refused": refused,
+            "files": rows,
+            "summary": summary,
+            # A refused target gets no runnable commands: offering one would
+            # invite a person to paste the exact thing the guard just blocked.
+            "setupCommands": None if refused else setup_commands(resolved, starter_path),
+            "startCommand": None if refused else {
+                "posix": start_command(resolved, platform="darwin"),
+                "windows": start_command(resolved, platform="win32"),
+            },
+        },
+    )
+
+
+def render_plan(result: dict) -> str:
+    data = result["data"]
+    lines = [
+        f"Preview only — nothing was written. Target: {data['target']}",
+        f"Starter path: {data['starterPath']}",
+        "",
+    ]
+    if data["files"]:
+        lines.append(f"Files Agent Kickstart would manage ({len(data['files'])}):")
+        for row in data["files"]:
+            lines.append(f"  {row['action']:<9} {row['path']}")
+        summary = data["summary"]
+        lines.append(
+            f"  → create {summary['create']}, unchanged {summary['unchanged']}, conflict {summary['conflict']}"
+        )
+        lines.append("")
+    if result["findings"]:
+        lines.append("Findings:")
+        for item in result["findings"]:
+            lines.append(f"  [{item['severity']}] {item['summary']}")
+            if item.get("detail"):
+                lines.append(f"            {item['detail']}")
+        lines.append("")
+    if data["refused"]:
+        lines.append("No install command is offered for this target — choose a project folder and preview again.")
+        lines.append("")
+    else:
+        lines.append("Commands you would run:")
+        for command in data["setupCommands"]["posix"]:
+            lines.append(f"  $ {command}")
+        lines.append("")
+        lines.append("Then, to start Kickstart:")
+        lines.append(f"  $ {data['startCommand']['posix']}")
+        lines.append("")
+    lines.append(f"Result: {result['status']} (preview, exit {result['exitCode']}). No files were changed.")
+    return "\n".join(lines)
+
+
+def run_plan(target: Path, starter_path: str, as_json: bool) -> int:
+    result = plan(target, starter_path)
+    print(json.dumps(result, indent=2) if as_json else render_plan(result))
+    return result["exitCode"]
+
+
 def install(target: Path) -> int:
-    target = target.resolve()
+    target = resolved_target(target)
     print(f"Installing Agent Kickstart inside: {target}")
     require_runtime()
     with as_file(asset_root()) as raw_assets:
         assets = Path(raw_assets)
-        entries = [(source, target / source.relative_to(assets)) for source in asset_files(assets)]
-        conflicts = [dest for source, dest in entries if dest.exists() and not filecmp.cmp(source, dest, shallow=False)]
+        conflicts = [row["path"] for row in file_actions(assets, target) if row["action"] == "conflict"]
         if conflicts:
-            listing = "\n".join(f"  - {path.relative_to(target)}" for path in conflicts)
+            listing = "\n".join(f"  - {path}" for path in conflicts)
             raise RuntimeError(
                 "Installation stopped before changing files because these paths already differ:\n"
                 f"{listing}\nMove or review them, then retry; nothing was overwritten."
             )
         created = 0
-        for source, dest in entries:
+        for source in asset_files(assets):
+            dest = target / source.relative_to(assets)
             if dest.exists():
                 continue
             dest.parent.mkdir(parents=True, exist_ok=True)
@@ -99,7 +354,7 @@ def install(target: Path) -> int:
 
 
 def uninstall(target: Path) -> int:
-    target = target.resolve()
+    target = resolved_target(target)
     print(f"Removing managed Agent Kickstart files from: {target}")
     removed = 0
     preserved = []
@@ -112,7 +367,7 @@ def uninstall(target: Path) -> int:
             dest = target / relative
             if not dest.exists():
                 continue
-            if filecmp.cmp(source, dest, shallow=False):
+            if dest.is_file() and filecmp.cmp(source, dest, shallow=False):
                 dest.unlink()
                 removed += 1
             else:
@@ -127,19 +382,39 @@ def uninstall(target: Path) -> int:
 
 
 def parser() -> argparse.ArgumentParser:
-    result = argparse.ArgumentParser(prog="agent-kickstart")
+    result = argparse.ArgumentParser(prog=TOOL)
     sub = result.add_subparsers(dest="command", required=True)
+    commands = {}
     for name in ("install", "uninstall"):
-        command = sub.add_parser(name)
-        command.add_argument("--target", type=Path, default=Path.cwd())
+        commands[name] = sub.add_parser(name)
+        commands[name].add_argument("--target", type=Path, default=Path.cwd())
+    commands["install"].add_argument(
+        "--dry-run", action="store_true",
+        help="show exactly what would be installed and change nothing",
+    )
+    commands["install"].add_argument(
+        "--path", dest="starter_path", choices=STARTER_PATHS, default="python",
+        help="starter path the preview should describe (with --dry-run)",
+    )
+    preview = sub.add_parser("plan", help="preview an installation without writing anything")
+    preview.add_argument("--target", type=Path, default=Path.cwd())
+    preview.add_argument("--path", dest="starter_path", choices=STARTER_PATHS, default="python")
+    preview.add_argument("--json", dest="as_json", action="store_true",
+                         help="emit a Hermes Reliability Lab result envelope")
     return result
 
 
 def main(argv=None) -> int:
     args = parser().parse_args(argv)
     try:
-        return install(args.target) if args.command == "install" else uninstall(args.target)
-    except RuntimeError as error:
+        if args.command == "plan":
+            return run_plan(args.target, args.starter_path, args.as_json)
+        if args.command == "install":
+            if args.dry_run:
+                return run_plan(args.target, args.starter_path, as_json=False)
+            return install(args.target)
+        return uninstall(args.target)
+    except (RuntimeError, OSError) as error:
         print(f"Agent Kickstart could not complete {args.command}.", file=sys.stderr)
         print(f"What happened: {error}", file=sys.stderr)
         print("No existing user work was deleted or overwritten.", file=sys.stderr)

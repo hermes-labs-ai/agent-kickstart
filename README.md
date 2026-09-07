@@ -93,6 +93,25 @@ Your portrait, interview notes, progress state, and creations remain local files
 
 This is defense in depth, not an operating-system sandbox. Always read Claude Code's permission prompts before approving them.
 
+## Preview before you install
+
+Before anything is written, you can see exactly what an installation would do:
+
+```sh
+agent-kickstart plan --target ./my-first-project
+```
+
+`plan` reads nothing of yours and writes nothing anywhere. It lists every file
+Kickstart would manage and whether each one would be created, is already
+identical, or conflicts with a file you already have; it reports whether Claude
+Code and Node.js are present; and it prints the exact commands you would run,
+including the one-line start command. `agent-kickstart install --dry-run` is the
+same preview. Add `--path javascript` to preview the repository-and-installer
+route instead of the Python one, and `--json` for a machine-readable result
+record.
+
+Nothing is installed until you run `agent-kickstart install` yourself.
+
 ## Python installation
 
 Install the helper into your current Python environment, then run it inside the
