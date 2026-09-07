@@ -82,6 +82,20 @@ class NodeProbeTests(unittest.TestCase):
         # "unknown" outranks the warn findings but is not a failure.
         self.assertEqual(result["status"], "unknown")
         self.assertEqual(result["exitCode"], 0)
+        # install() would still refuse (require_runtime() raises on an
+        # unreadable version), so no command is offered despite the exit code.
+        self.assertIsNone(result["data"]["setupCommands"])
+        self.assertIsNone(result["data"]["startCommand"])
+
+    def test_a_missing_runtime_withholds_setup_and_start_commands(self):
+        with patch("agent_kickstart.cli.shutil.which", return_value=None):
+            with TemporaryDirectory() as directory:
+                result = plan(Path(directory) / "project")
+
+        self.assertIn("runtime.claude.missing", [item["id"] for item in result["findings"]])
+        self.assertEqual(result["exitCode"], 1)
+        self.assertIsNone(result["data"]["setupCommands"])
+        self.assertIsNone(result["data"]["startCommand"])
 
 
 class PlanTests(unittest.TestCase):

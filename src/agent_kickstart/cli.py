@@ -242,6 +242,7 @@ def plan(target: Path, starter_path: str = "python") -> dict:
     findings: List[dict] = []
     rows: List[dict] = []
     summary = {"create": 0, "unchanged": 0, "conflict": 0}
+    runtime_blocked = False
 
     problem = target_problem(resolved)
     if problem:
@@ -249,7 +250,12 @@ def plan(target: Path, starter_path: str = "python") -> dict:
         refused = True
     else:
         refused = False
-        findings.extend(runtime_findings())
+        runtime_issues = runtime_findings()
+        findings.extend(runtime_issues)
+        # Every case runtime_findings() reports — missing, unreadable, timed
+        # out, or too old — is a case require_runtime() would raise on, so
+        # install() would refuse before writing anything.
+        runtime_blocked = bool(runtime_issues)
         with as_file(asset_root()) as raw_assets:
             rows = file_actions(Path(raw_assets), resolved)
         for row in rows:
@@ -289,9 +295,12 @@ def plan(target: Path, starter_path: str = "python") -> dict:
             "Use an empty or new folder for --path javascript, or use the Python "
             "route (pip install agent-kickstart) to add Kickstart into this folder instead.",
         ))
-    # Conflicts stop the installer before it changes anything, so a command
-    # offered here would be one the person pastes only to watch it refuse.
-    offer_commands = not refused and not clone_blocked and not summary["conflict"]
+    # Conflicts and runtime problems both stop the installer before it changes
+    # anything, so a command offered here would be one the person pastes only
+    # to watch it refuse.
+    offer_commands = (
+        not refused and not clone_blocked and not summary["conflict"] and not runtime_blocked
+    )
 
     exit_code = 1 if evidence.worst_status(findings) == "fail" else 0
     return evidence.envelope(
