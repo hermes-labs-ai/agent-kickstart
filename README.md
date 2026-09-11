@@ -15,7 +15,7 @@ copy and paste.
 
 ## Start here
 
-You need [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview) and Node.js 18 or newer.
+You need [Claude Code](https://code.claude.com/docs/en/overview) and Node.js 18 or newer.
 
 Open Claude Code in an empty folder and paste this sentence:
 
@@ -180,15 +180,15 @@ If the problem remains, open a [GitHub issue](https://github.com/hermes-labs-ai/
 
 ## Requirements and honest limits
 
-- Version 0.2 is intentionally Claude Code-specific. Its project commands,
+- Agent Kickstart is intentionally Claude Code-specific. Its project commands,
   permission settings, lifecycle hooks, native selector, and optional history
   import use Claude Code surfaces. Supporting Codex or another agent requires a
   separate adapter and is not claimed in this release.
 - Claude Code 2.1 or newer
 - Node.js 18 or newer
-- Tested on macOS with the current Claude Code CLI
+- Tested on macOS and Linux with the current Claude Code CLI (2.1.x)
 - One close-and-reopen is required after the first installation so Claude Code can discover Kickstart's project command, safety settings, and lifecycle hooks
-- Shell installer exercised on macOS; the PowerShell installer is syntax- and logic-checked but has not been run on Windows in this release
+- Shell installer exercised on macOS and on Linux in CI; the PowerShell installer is syntax- and logic-checked but has not been run on Windows in this release
 - Claude generates the adaptive questions and possibilities at runtime, so exact wording varies
 - If Claude Code's native selector is unavailable, Kickstart uses a numbered text fallback
 - The thin project-command files use Claude Code's legacy custom-command surface; Anthropic may eventually require a compatibility update
