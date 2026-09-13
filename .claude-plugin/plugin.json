@@ -1,0 +1,15 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "agent-kickstart",
+  "displayName": "Agent Kickstart",
+  "description": "A guided, project-local first experience for Claude Code that helps beginners start making something real.",
+  "version": "0.3.0",
+  "author": {
+    "name": "Hermes Labs",
+    "url": "https://github.com/hermes-labs-ai"
+  },
+  "homepage": "https://github.com/hermes-labs-ai/agent-kickstart",
+  "repository": "https://github.com/hermes-labs-ai/agent-kickstart",
+  "license": "MIT",
+  "keywords": ["beginner", "onboarding", "guided", "project-local", "safety" ]
+}

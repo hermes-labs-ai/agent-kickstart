@@ -1,0 +1,96 @@
+{
+  "permissions": {
+    "defaultMode": "default",
+    "disableBypassPermissionsMode": "disable",
+    "disableAutoMode": "disable",
+    "allow": [
+      "Edit(agent-kickstart/state/user-portrait.md)",
+      "Edit(agent-kickstart/state/possibility-history.md)",
+      "Edit(agent-kickstart/state/onboarding-notes.md)",
+      "Edit(agent-kickstart/state/pending-selection.md)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs init)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs doctor)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs status)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs enter)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs checkpoint awaiting_safety)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs checkpoint awaiting_self_description)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs checkpoint awaiting_self_description safest-default)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs checkpoint awaiting_self_description files-here-okay)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs checkpoint awaiting_self_description ask-every-time)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs checkpoint awaiting_history_choice)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs history-choice use-history)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs history-choice interview)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs history-scan)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs history-extract)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs portrait-verify)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs checkpoint awaiting_followup_1)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs checkpoint awaiting_followup_2)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs checkpoint awaiting_followup_3)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs checkpoint awaiting_portrait_confirmation)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs checkpoint awaiting_orientation)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs checkpoint awaiting_possibility)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs checkpoint first_action)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs complete)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs leave)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs request-reset)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs reset --confirm)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs portrait-clear --confirm)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs select-from-pending)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs evidence modified_suggestion)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs evidence corrected_assumption)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs evidence understood_file_change)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs evidence chose_scope)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs evidence requested_control)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs evidence recovered_from_error)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs evidence asked_underlying_mechanism)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs guidance adaptive)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs guidance simpler)",
+      "Bash(node agent-kickstart/bin/kickstart-state.mjs guidance advanced)"
+    ],
+    "ask": [
+      "WebFetch",
+      "WebSearch"
+    ],
+    "deny": [
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.config/gcloud/**)",
+      "Read(~/.gnupg/**)",
+      "Read(~/.kube/**)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Edit(~/.ssh/**)",
+      "Edit(~/.aws/**)",
+      "Edit(~/.config/gcloud/**)",
+      "Edit(~/.gnupg/**)",
+      "Edit(~/.kube/**)",
+      "Edit(**/.env)",
+      "Edit(**/.env.*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node agent-kickstart/bin/kickstart-state.mjs hook-context",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node agent-kickstart/bin/kickstart-state.mjs session-end",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
