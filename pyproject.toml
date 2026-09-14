@@ -10,16 +10,38 @@ readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
 authors = [{name = "Hermes Labs"}]
+keywords = [
+  "claude-code",
+  "onboarding",
+  "beginner-friendly",
+  "cli",
+  "developer-tools",
+  "agent-harness",
+  "project-scaffolding",
+  "guided-setup",
+]
 classifiers = [
   "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Education",
+  "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
 [project.urls]
 Homepage = "https://github.com/hermes-labs-ai/agent-kickstart"
 Repository = "https://github.com/hermes-labs-ai/agent-kickstart"
 Issues = "https://github.com/hermes-labs-ai/agent-kickstart/issues"
+Documentation = "https://github.com/hermes-labs-ai/agent-kickstart#readme"
+Changelog = "https://github.com/hermes-labs-ai/agent-kickstart/releases"
 
 [project.scripts]
 agent-kickstart = "agent_kickstart.cli:main"
