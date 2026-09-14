@@ -1,5 +1,7 @@
 # Agent Kickstart
 
+[![CI](https://github.com/hermes-labs-ai/agent-kickstart/actions/workflows/ci.yml/badge.svg)](https://github.com/hermes-labs-ai/agent-kickstart/actions/workflows/ci.yml)
+
 **A guided first project for people new to Claude Code.**
 
 Agent Kickstart takes you from an empty folder to a concrete starting point: a
