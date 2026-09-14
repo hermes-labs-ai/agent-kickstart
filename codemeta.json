@@ -1,0 +1,15 @@
+{
+  "@context": "https://w3id.org/codemeta/3.1",
+  "@type": "SoftwareSourceCode",
+  "name": "agent-kickstart",
+  "description": "A guided, project-local first project for people new to Claude Code: a stateful onboarding harness that interviews the user, proposes concrete starter projects, and begins one with them.",
+  "codeRepository": "https://github.com/hermes-labs-ai/agent-kickstart",
+  "version": "0.3.0",
+  "license": "https://spdx.org/licenses/MIT",
+  "programmingLanguage": ["Python", "JavaScript"],
+  "runtimePlatform": "Python >=3.9; Node.js >=18",
+  "identifier": ["https://pypi.org/project/agent-kickstart/"],
+  "author": [{"@type": "Person", "givenName": "Rolando", "familyName": "Bosch Rodriguez", "identifier": "https://orcid.org/0009-0005-4896-1112"}],
+  "url": "https://pypi.org/project/agent-kickstart/",
+  "keywords": ["Claude Code", "onboarding", "guided setup", "beginner-friendly", "agent harness"]
+}

@@ -1,0 +1,31 @@
+# Agent Kickstart
+
+> A guided, project-local first project for people new to Claude Code: it interviews you, proposes concrete starter projects, and begins one with you — no coding or terminal experience required.
+
+Agent Kickstart is a small stateful onboarding harness for Claude Code, not a general-purpose
+agent framework, a personality quiz, or a single sequential prompt. It is intentionally
+Claude Code-specific: its project commands, permission settings, lifecycle hooks, native
+selector, and optional history import all use Claude Code surfaces. Supporting Codex or another
+agent would need a separate adapter and is not built or claimed in this release.
+
+Maturity: `0.3.0`, alpha. Tested on macOS and Linux with the current Claude Code CLI; the shell
+installer is exercised on macOS and Linux in CI, and the PowerShell installer is syntax- and
+logic-checked but has not been run on Windows in this release.
+
+## Docs
+
+- [README](https://github.com/hermes-labs-ai/agent-kickstart/blob/main/README.md): install (Python `pip install agent-kickstart`, or the JavaScript repository-and-installer route), what a first session looks like, stop/resume/correct, safety and privacy, and troubleshooting
+- [DEMO](https://github.com/hermes-labs-ai/agent-kickstart/blob/main/DEMO.md): a ten-minute friend demo
+- [DEVELOPMENT](https://github.com/hermes-labs-ai/agent-kickstart/blob/main/DEVELOPMENT.md): architecture, project structure, and the test commands
+- [CITATION.cff](https://github.com/hermes-labs-ai/agent-kickstart/blob/main/CITATION.cff): how to cite this software
+
+## Optional
+
+- [CONTRIBUTING.md](https://github.com/hermes-labs-ai/agent-kickstart/blob/main/CONTRIBUTING.md): how to propose a change
+- [SECURITY.md](https://github.com/hermes-labs-ai/agent-kickstart/blob/main/SECURITY.md): how to report a vulnerability
+- [LICENSE](https://github.com/hermes-labs-ai/agent-kickstart/blob/main/LICENSE): MIT
+
+## About Hermes Labs
+
+Agent Kickstart is built by [Hermes Labs](https://hermes-labs.ai), an AI reliability
+engineering studio for production agents and LLM applications.
