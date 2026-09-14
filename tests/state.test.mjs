@@ -214,3 +214,23 @@ test("state directory symlink escaping the repository is refused", { skip: proce
   const result = run(repo, ["init"], { expectFailure: true });
   assert.match(result.stderr, /symlink that leaves this repository/);
 });
+
+test("plugin invocation keeps state in CLAUDE_PROJECT_DIR, not the plugin root", () => {
+  const plugin = freshRepo("plugin");
+  const project = fs.mkdtempSync(path.join(os.tmpdir(), "kickstart-project-"));
+  const script = path.join(plugin, "agent-kickstart/bin/kickstart-state.mjs");
+  fs.rmSync(path.join(plugin, "agent-kickstart/state"), { recursive: true, force: true });
+  const env = { ...process.env, CLAUDE_PLUGIN_ROOT: plugin, CLAUDE_PROJECT_DIR: project };
+  const result = spawnSync(process.execPath, [script, "enter"], { cwd: os.tmpdir(), encoding: "utf8", env });
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(project, "agent-kickstart/state/status.json"), "utf8")).mode, "active");
+  assert.equal(fs.existsSync(path.join(plugin, "agent-kickstart/state")), false);
+});
+
+test("an unrelated CLAUDE_PLUGIN_ROOT leaves an installed checkout's state in place", () => {
+  const repo = freshRepo();
+  const project = fs.mkdtempSync(path.join(os.tmpdir(), "kickstart-project-"));
+  run(repo, ["enter"], { env: { CLAUDE_PLUGIN_ROOT: project, CLAUDE_PROJECT_DIR: project } });
+  assert.equal(json(repo, "agent-kickstart/state/status.json").mode, "active");
+  assert.equal(fs.existsSync(path.join(project, "agent-kickstart")), false);
+});

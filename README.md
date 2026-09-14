@@ -188,6 +188,7 @@ If the problem remains, open a [GitHub issue](https://github.com/hermes-labs-ai/
 - Node.js 18 or newer
 - Tested on macOS and Linux with the current Claude Code CLI (2.1.x)
 - One close-and-reopen is required after the first installation so Claude Code can discover Kickstart's project command, safety settings, and lifecycle hooks
+- The supported installers (`install.sh`, `install.ps1`, `agent-kickstart install`) place `.claude/settings.json`, with Kickstart's permission rules, inside the project. Loading this repository as a Claude Code plugin (entry command `/agent-kickstart:kickstart`) provides the commands and lifecycle hooks, but Claude Code does not apply permission rules from a plugin; for a plugin-only setup, merge the `permissions` block from this repository's `settings.json` into the project's `.claude/settings.json`
 - Shell installer exercised on macOS and on Linux in CI; the PowerShell installer is syntax- and logic-checked but has not been run on Windows in this release
 - Claude generates the adaptive questions and possibilities at runtime, so exact wording varies
 - If Claude Code's native selector is unavailable, Kickstart uses a numbered text fallback
