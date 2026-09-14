@@ -4,11 +4,11 @@ argument-hint: "[resume|reset]"
 disable-model-invocation: true
 ---
 
-@agent-kickstart/RUNTIME.md
+@${CLAUDE_PLUGIN_ROOT}/agent-kickstart/RUNTIME.md
 
 Apply the runtime above now. This is the one visible entry surface for Agent Kickstart.
 
-1. Run `node agent-kickstart/bin/kickstart-state.mjs enter` from the project root. This only updates readable project-local state; normal permission handling remains authoritative.
+1. Run `CLAUDE_PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT}" CLAUDE_PROJECT_DIR="${CLAUDE_PROJECT_DIR}" node "${CLAUDE_PLUGIN_ROOT}/agent-kickstart/bin/kickstart-state.mjs" enter` from the project root. This only updates readable project-local state under `${CLAUDE_PROJECT_DIR}`; normal permission handling remains authoritative. Wherever the runtime documents say `node agent-kickstart/bin/kickstart-state.mjs <action>`, run it in this same plugin-root form.
 2. Use the returned `route`, `status.stage`, and the runtime transition table to start, resume, or welcome back the user.
 3. Do not merely summarize the runtime or present a command manual.
 4. Use `AskUserQuestion` when the runtime calls for a native choice. If it is unavailable, use the documented numbered fallback.

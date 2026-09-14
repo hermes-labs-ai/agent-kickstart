@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node agent-kickstart/bin/kickstart-state.mjs hook-context",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/agent-kickstart/bin/kickstart-state.mjs\" hook-context",
             "timeout": 5
           }
         ]
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node agent-kickstart/bin/kickstart-state.mjs session-end",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/agent-kickstart/bin/kickstart-state.mjs\" session-end",
             "timeout": 5
           }
         ]
