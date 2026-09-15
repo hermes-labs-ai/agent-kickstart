@@ -7,7 +7,21 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(SCRIPT_DIR, "..", "..");
+const SCRIPT_ROOT = path.resolve(SCRIPT_DIR, "..", "..");
+const ROOT = projectRoot();
+
+// As a Claude Code plugin this script lives in the plugin cache, so project-local
+// state belongs under CLAUDE_PROJECT_DIR. An installed checkout keeps its own root.
+function projectRoot() {
+  const { CLAUDE_PLUGIN_ROOT: pluginRoot, CLAUDE_PROJECT_DIR: projectDir } = process.env;
+  if (!pluginRoot || !projectDir) return SCRIPT_ROOT;
+  try {
+    if (fs.realpathSync(pluginRoot) !== fs.realpathSync(SCRIPT_ROOT)) return SCRIPT_ROOT;
+    return fs.realpathSync(projectDir);
+  } catch {
+    return SCRIPT_ROOT;
+  }
+}
 const HARNESS = path.join(ROOT, "agent-kickstart");
 const STATE_DIR = path.join(HARNESS, "state");
 const CREATIONS_DIR = path.join(HARNESS, "creations");
