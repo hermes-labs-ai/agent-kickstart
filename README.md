@@ -167,6 +167,22 @@ you can then archive or remove the repository whenever you no longer need the
 local portrait or creations. If you installed the Python helper, remove that
 separately with `pip uninstall agent-kickstart`.
 
+## Install from the Hermes Labs plugin marketplace
+
+Agent Kickstart is also listed in the Hermes Labs Claude Code plugin marketplace,
+[hermes-labs-ai/claude-plugins](https://github.com/hermes-labs-ai/claude-plugins).
+Inside Claude Code, run:
+
+```text
+/plugin marketplace add hermes-labs-ai/claude-plugins
+/plugin install agent-kickstart@hermes-labs
+```
+
+The plugin's entry command is `/agent-kickstart:kickstart`. A plugin install
+provides the commands and lifecycle hooks but not Kickstart's project permission
+rules (see [Requirements and honest limits](#requirements-and-honest-limits)), so
+the project-local installers above remain the recommended path for beginners.
+
 ## If something does not work
 
 - **`/kickstart` is not recognized:** type `/exit` and run the exact start line
@@ -190,6 +206,7 @@ If the problem remains, open a [GitHub issue](https://github.com/hermes-labs-ai/
 - Node.js 18 or newer
 - Tested on macOS and Linux with the current Claude Code CLI (2.1.x)
 - One close-and-reopen is required after the first installation so Claude Code can discover Kickstart's project command, safety settings, and lifecycle hooks
+- The supported installers (`install.sh`, `install.ps1`, `agent-kickstart install`) place `.claude/settings.json`, with Kickstart's permission rules, inside the project. Loading this repository as a Claude Code plugin (entry command `/agent-kickstart:kickstart`) provides the commands and lifecycle hooks, but Claude Code does not apply permission rules from a plugin; for a plugin-only setup, merge the `permissions` block from this repository's `settings.json` into the project's `.claude/settings.json`
 - Shell installer exercised on macOS and on Linux in CI; the PowerShell installer is syntax- and logic-checked but has not been run on Windows in this release
 - Claude generates the adaptive questions and possibilities at runtime, so exact wording varies
 - If Claude Code's native selector is unavailable, Kickstart uses a numbered text fallback
