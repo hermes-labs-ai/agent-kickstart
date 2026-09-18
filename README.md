@@ -129,16 +129,19 @@ Nothing is installed until you run `agent-kickstart install` yourself.
 ## Python installation
 
 Install the helper into your current Python environment, then run it inside the
-empty folder where you want to begin:
+empty folder where you want to begin. Using `python -m` keeps both commands tied
+to the same interpreter, which matters if your machine has more than one Python
+installed:
 
 ```sh
-pip install agent-kickstart
-agent-kickstart install
+python -m pip install agent-kickstart
+python -m agent_kickstart install
 ```
 
 The helper checks for Claude Code and Node.js, copies the Kickstart harness only
 into that project, and prints the correct one-line start command for your
-terminal. The equivalent module command is `python -m agent_kickstart install`.
+terminal. If you know only one Python is on your PATH, the shorter
+`pip install agent-kickstart` and `agent-kickstart install` are equivalent.
 
 If you used an earlier version, the `claude-kickstart` command remains available as a
 compatibility alias. New installations and documentation use `agent-kickstart`.
