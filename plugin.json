@@ -1,6 +1,6 @@
 {
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "agent-kickstart",
-  "displayName": "Agent Kickstart",
   "description": "A guided, project-local first experience for Claude Code that helps beginners start making something real.",
   "version": "0.3.0",
   "author": {

@@ -7,8 +7,9 @@ import { fileURLToPath } from "node:url";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const MANIFEST_PATH = path.join(ROOT, "plugin.json");
 
-const REQUIRED_KEYS = ["name", "description", "version", "author", "homepage", "repository", "license", "keywords"];
-const ALLOWED_KEYS = new Set([...REQUIRED_KEYS, "displayName"]);
+const SCHEMA_URL = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json";
+const REQUIRED_KEYS = ["$schema", "name", "description", "version", "author", "homepage", "repository", "license", "keywords"];
+const ALLOWED_KEYS = new Set(REQUIRED_KEYS);
 const ALLOWED_AUTHOR_KEYS = new Set(["name", "url"]);
 
 function loadJson(relative) {
@@ -30,6 +31,7 @@ test("root plugin.json is valid JSON matching the Agent Plugins v1 shape", () =>
     assert.ok(Object.prototype.hasOwnProperty.call(manifest, key), `plugin.json is missing required key "${key}"`);
   }
 
+  assert.equal(manifest.$schema, SCHEMA_URL, "$schema must be the exact Agent Plugins v1 schema URL");
   assert.equal(typeof manifest.name, "string");
   assert.equal(typeof manifest.description, "string");
   assert.equal(typeof manifest.version, "string");
@@ -53,6 +55,14 @@ test("root plugin.json only declares recognized Agent Plugins v1 keys", () => {
   for (const key of Object.keys(manifest)) {
     assert.ok(ALLOWED_KEYS.has(key), `plugin.json has unexpected key "${key}"`);
   }
+});
+
+test("root plugin.json rejects the nonstandard displayName key", () => {
+  const manifest = loadJson("plugin.json");
+  assert.ok(
+    !Object.prototype.hasOwnProperty.call(manifest, "displayName"),
+    "plugin.json must not declare displayName; it is not part of the Agent Plugins v1 schema"
+  );
 });
 
 test("root plugin.json name and version match the Claude Code plugin manifest", () => {
