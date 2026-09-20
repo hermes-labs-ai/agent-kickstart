@@ -10,10 +10,25 @@ Use `AskUserQuestion` with header `Safety`, single-select, and these options in 
 2. **Files here okay** — Create harmless files here, but ask before anything broader.
 3. **Ask every time** — Explain and ask before even harmless project-file changes.
 
-The safest choice is recommended. Save the answer with:
+The safest choice is recommended. After the user selects an option, save that
+selection by running exactly one matching command below. Do not choose for them.
+
+For **Safest default**:
 
 ```text
-node agent-kickstart/bin/kickstart-state.mjs checkpoint awaiting_self_description
+node agent-kickstart/bin/kickstart-state.mjs checkpoint awaiting_self_description safest-default
+```
+
+For **Files here okay**:
+
+```text
+node agent-kickstart/bin/kickstart-state.mjs checkpoint awaiting_self_description files-here-okay
+```
+
+For **Ask every time**:
+
+```text
+node agent-kickstart/bin/kickstart-state.mjs checkpoint awaiting_self_description ask-every-time
 ```
 
 Then ask the open prompt below in the same response only after the safety selection is known.

@@ -121,3 +121,14 @@ test("public privacy surface binds consent, decline, and private-corpus deletion
   assert.match(pro, /history-choice use-history/);
   assert.match(pro, /Extraction rechecks both that recorded consent and current eligibility/);
 });
+
+
+test("onboarding saves every safety option and keeps packaged instructions identical", () => {
+  const onboarding = fs.readFileSync(path.join(ROOT, "agent-kickstart/ONBOARDING.md"), "utf8");
+  const packaged = fs.readFileSync(path.join(ROOT, "src/agent_kickstart/assets/agent-kickstart/ONBOARDING.md"), "utf8");
+  assert.equal(onboarding, packaged);
+  for (const choice of ["safest-default", "files-here-okay", "ask-every-time"]) {
+    assert.ok(onboarding.includes(`checkpoint awaiting_self_description ${choice}`));
+  }
+  assert.ok(!onboarding.includes("checkpoint awaiting_self_description\n"));
+});

@@ -6,6 +6,8 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const MANIFEST_PATH = path.join(ROOT, "plugin.json");
+const PYPROJECT = fs.readFileSync(path.join(ROOT, "pyproject.toml"), "utf8");
+const PACKAGE_VERSION = PYPROJECT.match(/^version = "([^"]+)"$/m)?.[1];
 
 const SCHEMA_URL = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json";
 const REQUIRED_KEYS = ["$schema", "name", "description", "version", "author", "homepage", "repository", "license", "keywords"];
@@ -69,7 +71,17 @@ test("root plugin.json name and version match the Claude Code plugin manifest", 
   const manifest = loadJson("plugin.json");
   const claudePlugin = loadJson(".claude-plugin/plugin.json");
   assert.equal(manifest.name, "agent-kickstart");
-  assert.equal(manifest.version, "0.3.0");
+  assert.ok(PACKAGE_VERSION, "pyproject.toml must declare a package version");
+  assert.equal(manifest.version, PACKAGE_VERSION);
   assert.equal(manifest.name, claudePlugin.name, "name must match .claude-plugin/plugin.json");
   assert.equal(manifest.version, claudePlugin.version, "version must match .claude-plugin/plugin.json");
+  assert.match(
+    fs.readFileSync(path.join(ROOT, "src/agent_kickstart/__init__.py"), "utf8"),
+    new RegExp(`__version__ = "${PACKAGE_VERSION}"`),
+  );
+  assert.equal(loadJson("codemeta.json").version, PACKAGE_VERSION);
+  assert.match(
+    fs.readFileSync(path.join(ROOT, "CITATION.cff"), "utf8"),
+    new RegExp(`^version: "${PACKAGE_VERSION}"$`, "m"),
+  );
 });
