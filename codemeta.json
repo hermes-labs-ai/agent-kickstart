@@ -4,7 +4,7 @@
   "name": "agent-kickstart",
   "description": "A guided, project-local first project for people new to Claude Code: a stateful onboarding harness that interviews the user, proposes concrete starter projects, and begins one with them.",
   "codeRepository": "https://github.com/hermes-labs-ai/agent-kickstart",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "license": "https://spdx.org/licenses/MIT",
   "programmingLanguage": ["Python", "JavaScript"],
   "runtimePlatform": "Python >=3.9; Node.js >=18",

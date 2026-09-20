@@ -234,3 +234,14 @@ test("an unrelated CLAUDE_PLUGIN_ROOT leaves an installed checkout's state in pl
   assert.equal(json(repo, "agent-kickstart/state/status.json").mode, "active");
   assert.equal(fs.existsSync(path.join(project, "agent-kickstart")), false);
 });
+
+
+test("each first-run safety selection is durably recorded", () => {
+  for (const choice of ["safest-default", "files-here-okay", "ask-every-time"]) {
+    const repo = freshRepo(`safety-${choice}`);
+    run(repo, ["enter"]);
+    const result = JSON.parse(run(repo, ["checkpoint", "awaiting_self_description", choice]).stdout);
+    assert.equal(result.status.stage, "awaiting_self_description");
+    assert.equal(result.status.safety_choice, choice);
+  }
+});
