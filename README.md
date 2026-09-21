@@ -4,6 +4,10 @@
 
 **A guided first project for people new to Claude Code.**
 
+Agent Kickstart is developed by [Hermes Labs](https://hermes-labs.ai).
+
+Hermes Labs studies failure modes in agent and LLM systems, develops open-source tools that treat language as part of the runtime, and works with teams to remediate reliability failures in production.
+
 Agent Kickstart takes you from an empty folder to a concrete starting point: a
 family recipe page, a decision map, a small local helper, or another project
 shaped around what you actually care about. It asks a few questions, separates
@@ -223,10 +227,8 @@ See [DEMO.md](DEMO.md) for a ten-minute friend demo and [DEVELOPMENT.md](DEVELOP
 
 ## About
 
-Agent Kickstart is built by [Hermes Labs](https://hermes-labs.ai), an AI reliability
-engineering studio for production agents and LLM applications. Kickstart brings that work
-to first-time Claude Code users: a guided, project-local way to begin useful work without
-having to learn terminal conventions first.
+Kickstart brings Hermes Labs' work to first-time Claude Code users through a guided,
+project-local way to begin useful work without having to learn terminal conventions first.
 
 ## License
 
