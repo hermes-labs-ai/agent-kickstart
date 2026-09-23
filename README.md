@@ -1,12 +1,16 @@
-# Agent Kickstart
+<div align="center">
+
+<h1>Agent Kickstart</h1>
+
+<p><strong>A guided first project for people new to Claude Code.</strong></p>
+
+<p>Agent Kickstart is developed by <a href="https://hermes-labs.ai">Hermes Labs</a>.</p>
+
+<p>Hermes Labs is an agentic infrastructure company building the reliability layer for autonomous systems.</p>
 
 [![CI](https://github.com/hermes-labs-ai/agent-kickstart/actions/workflows/ci.yml/badge.svg)](https://github.com/hermes-labs-ai/agent-kickstart/actions/workflows/ci.yml)
 
-**A guided first project for people new to Claude Code.**
-
-Agent Kickstart is developed by [Hermes Labs](https://hermes-labs.ai).
-
-Hermes Labs studies failure modes in agent and LLM systems, develops open-source tools that treat language as part of the runtime, and works with teams to remediate reliability failures in production.
+</div>
 
 Agent Kickstart takes you from an empty folder to a concrete starting point: a
 family recipe page, a decision map, a small local helper, or another project
